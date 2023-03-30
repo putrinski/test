@@ -29,50 +29,6 @@ Copy code
 		background-color: #ff0000;
 		color: white;
 	}
-
-	.retry-button {
-		background-image: url("https://cdn-icons-png.flaticon.com/512/54/54750.png");
-		background-repeat: no-repeat;
-		background-position: center;
-		background-size: contain;
-		padding: 10px;
-	}
-
-	img {
-		display: block;
-		margin: auto;
-		max-width: 100%;
-		height: auto;<!DOCTYPE html>
-<html>
-<head>
-	<title>Random Image from Subreddit</title>
-	<style>
-		body {
-			background-color: darkslategray;
-			color: white;
-			font-family: sans-serif;
-		}
-css
-Copy code
-	h1 {
-		text-align: center;
-	}
-
-	button {
-		background-color: gray;
-		color: yellow;
-		padding: 10px 20px;
-		border: none;
-		border-radius: 5px;
-		font-size: 16px;
-		margin: 10px;
-		cursor: pointer;
-	}
-
-	.red-button {
-		background-color: #ff0000;
-		color: white;
-	}
     
 	.retry-button {
 		background-image: url("https://cdn-icons-png.flaticon.com/512/54/54750.png");
@@ -182,77 +138,6 @@ Copy code
 	<button id="get-random-image" onclick="getRandomImage()">Get Random Image</button>
   <button id="get-random-video" onclick="getRandomVideo()">Get Random Video</button>
 
-	<button id="toggle-nsfw" onclick="toggleNsfw()">NSFW OFF</button>
-	<button id="retry-button" class="retry-button" onclick="getRandomImage()"></button>
-</div>
-
-<script>
-	getRandomImage();
-</script>
-</body>
-</html>
-		padding: 20px;
-	}
-</style>
-<script>
-	let subreddit = "cats";
-	let nsfwEnabled = false;
-
-	function getRandomImage() {
-		subreddit = document.getElementById("subreddit-input").value.trim();
-
-	
-		let url = `https://www.reddit.com/r/${subreddit}/.json?limit=100`;
-
-		fetch(url)
-			.then(response => response.json())
-			.then(data => {
-				let posts = data.data.children.filter(post => post.data.post_hint === "image");
-
-				if (!nsfwEnabled) {
-					posts = posts.filter(post => !post.data.over_18);
-				}
-
-				if (posts.length === 0) {
-					alert("No images found. Try again with a different subreddit.");
-				} else {
-					let randomPost = posts[Math.floor(Math.random() * posts.length)];
-					let imageUrl = randomPost.data.url;
-
-					let image = document.getElementById("random-image");
-					image.src = imageUrl;
-				}
-			})
-			.catch(error => console.log(error));
-	}
-
-	function toggleNsfw() {
-		nsfwEnabled = !nsfwEnabled;
-
-		let toggleButton = document.getElementById("toggle-nsfw");
-		if (nsfwEnabled) {
-			toggleButton.classList.add("red-button");
-			toggleButton.innerHTML = "NSFW ON";
-		} else {
-			toggleButton.classList.remove("red-button");
-			toggleButton.innerHTML = "NSFW OFF";
-		}
-
-		getRandomImage();
-	}
-</script>
-</head>
-<body>
-	<h1>Random Image from Subreddit</h1>
-php
-Copy code
-<div id="image-container">
-	<img id="random-image" src="" alt="Random image from subreddit">
-</div>
-
-<div id="buttons-container">
-	<input id="subreddit-input" type="text" placeholder="Enter subreddit">
-	<button id="get-random-image" onclick="getRandomImage()">Get Random Image</button>
 	<button id="toggle-nsfw" onclick="toggleNsfw()">NSFW OFF</button>
 	<button id="retry-button" class="retry-button" onclick="getRandomImage()"></button>
 </div>
