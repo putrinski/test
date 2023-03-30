@@ -110,17 +110,6 @@ function getRandomVideo() {
 
 	function toggleNsfw() {
 		nsfwEnabled = !nsfwEnabled;
-		let loopTimer;
-
-function startLoop() {
-    loopTimer = setInterval(getRandomImage, 5000);
-}
-
-function stopLoop() {
-    clearInterval(loopTimer);
-}
-
-startLoop();
 
 
 		let toggleButton = document.getElementById("toggle-nsfw");
@@ -147,8 +136,6 @@ startLoop();
 	<input id="subreddit-input" type="text" placeholder="Enter subreddit">
 	<button id="get-random-image" onclick="getRandomImage()">Get Random Image</button>
   <button id="get-random-video" onclick="getRandomVideo()">Get Random Video</button>
-<button id="loop-images" onclick="startLoop()">Loop Images</button>
-
 	<button id="toggle-nsfw" onclick="toggleNsfw()">NSFW OFF</button>
 	<button id="retry-button" class="retry-button" onclick="getRandomImage()"></button>
 </div>
