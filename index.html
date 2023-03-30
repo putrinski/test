@@ -59,7 +59,8 @@ Copy code
 			return;
 		}
 
-		let url = `https://www.reddit.com/r/${subreddit}/.json?limit=100`;
+		let url = `https://cors-anywhere.herokuapp.com/https://www.reddit.com/r/${subreddit}/.json?limit=100`;
+
 
 		fetch(url)
 			.then(response => response.json())
