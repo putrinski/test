@@ -8,7 +8,8 @@
 			color: white;
 			font-family: sans-serif;
 		}
-
+css
+Copy code
 	h1 {
 		text-align: center;
 	}
@@ -52,9 +53,7 @@
 	function getRandomImage() {
 		subreddit = document.getElementById("subreddit-input").value.trim();
 
-
-		}
-
+	
 		let url = `https://www.reddit.com/r/${subreddit}/.json?limit=100`;
 
 		fetch(url)
@@ -97,7 +96,8 @@
 </head>
 <body>
 	<h1>Random Image from Subreddit</h1>
-
+php
+Copy code
 <div id="image-container">
 	<img id="random-image" src="" alt="Random image from subreddit">
 </div>
