@@ -52,9 +52,7 @@
 	function getRandomImage() {
 		subreddit = document.getElementById("subreddit-input").value.trim();
 
-		if (subreddit === "") {
-			alert("Please enter a subreddit.");
-			return;
+
 		}
 
 		let url = `https://www.reddit.com/r/${subreddit}/.json?limit=100`;
