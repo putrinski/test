@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -77,22 +76,17 @@ Copy code
 					let randomPost = posts[Math.floor(Math.random() * posts.length)];
 					let imageUrl = randomPost.data.url;
           
-let newWidth = 500; // Cambiar el ancho a lo que necesites
-let img = new Image();
-img.src = imageUrl;
-img.onload = function() {
-   let canvas = document.createElement("canvas");
-   let scale = newWidth / img.width;
-   canvas.width = newWidth;
-   canvas.height = img.height * scale;
-   let ctx = canvas.getContext("2d");
-   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-   imageUrl = canvas.toDataURL();
-   image.src = imageUrl;
-}
-
 					let image = document.getElementById("random-image");
 					image.src = imageUrl;
+
+          let image = document.getElementById("random-image");
+
+image.onload = function() {
+    if (image.width > 500) {
+        image.width = 500;
+    }
+};
+
 				}
 			})
 			.catch(error => console.log(error));
@@ -134,5 +128,9 @@ Copy code
 </script>
 </body>
 </html>
+
+
+
+
 
 
