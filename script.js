@@ -1,59 +1,112 @@
-<script>
-	getRandomImage();
+// Variables globales
+let currentSubreddit = "";
+let currentPost = {};
+let nsfwEnabled = false;
 
-  function toggleFullScreen() {
-    let img = document.getElementById("random-image");
-    if (!document.fullscreenElement) {
-      img.requestFullscreen();
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen(); 
-      }
-    }
-  }
+// Obtener imagen aleatoria de Reddit
+function getRandomImage() {
+	const subreddit = document.getElementById("subreddit-input").value.trim() || "pics";
 
-  let img = document.getElementById("random-image");
-  img.addEventListener("click", toggleFullScreen);
+	// Si se ingresa un subreddit diferente al actual, limpiar post actual
+	if (subreddit !== currentSubreddit) {
+		currentPost = {};
+	}
 
-  let closeButton = document.createElement("button");
-  closeButton.innerHTML = "X";
-  closeButton.style.position = "absolute";
-  closeButton.style.top = "10px";
-  closeButton.style.right = "10px";
-  closeButton.style.backgroundColor = "white";
-  closeButton.style.color = "black";
-  closeButton.style.border = "none";
-  closeButton.style.borderRadius = "50%";
-  closeButton.style.padding = "5px 10px";
-  closeButton.style.cursor = "pointer";
-  closeButton.style.display = "none";
-  
-  let fullScreenContainer = document.createElement("div");
-  fullScreenContainer.style.display = "none";
-  fullScreenContainer.style.position = "fixed";
-  fullScreenContainer.style.top = "0";
-  fullScreenContainer.style.left = "0";
-  fullScreenContainer.style.width = "100%";
-  fullScreenContainer.style.height = "100%";
-  fullScreenContainer.style.backgroundColor = "black";
-  fullScreenContainer.style.zIndex = "9999";
-  fullScreenContainer.appendChild(closeButton);
+	// Obtener imagen aleatoria desde Reddit
+	const url = `https://www.reddit.com/r/${subreddit}/random.json`;
+fetch(url)
+.then(response => response.json())
+.then(data => {
+const post = data[0].data.children[0].data;
+// Verificar si el post es una imagen y no está marcado como NSFW
+if (post.post_hint === "image" && (!post.over_18 || nsfwEnabled)) {
+// Si el post es el mismo que el anterior, obtener otro
+if (post.id === currentPost.id) {
+getRandomImage();
+return;
+}
+// Guardar post actual y actualizar imagen y texto en la página
+currentPost = post;
+const img = document.getElementById("random-image");
+img.src = post.url;
+const postText = document.getElementById("post-text");
+postText.innerHTML = ${post.title} by ${post.author};
+postText.href = https://reddit.com${post.permalink};
+} else {
+// Si el post no es una imagen o está marcado como NSFW, obtener otro
+getRandomImage();
+}
+})
+.catch(error => console.error(error));
+}
 
-  closeButton.addEventListener("click", function() {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    }
-  });
+// Obtener video aleatorio de Reddit
+function getRandomVideo() {
+const subreddit = document.getElementById("subreddit-input").value.trim() || "videos";
 
-  document.addEventListener("fullscreenchange", function() {
-    if (document.fullscreenElement) {
-      fullScreenContainer.style.display = "block";
-      closeButton.style.display = "block";
-    } else {
-      fullScreenContainer.style.display = "none";
-      closeButton.style.display = "none";
-    }
-  });
+// Si se ingresa un subreddit diferente al actual, limpiar post actual
+if (subreddit !== currentSubreddit) {
+	currentPost = {};
+}
 
-  document.body.appendChild(fullScreenContainer);
-</script>
+// Obtener video aleatorio desde Reddit
+const url = `https://www.reddit.com/r/${subreddit}/random.json`;
+fetch(url)
+	.then(response => response.json())
+	.then(data => {
+		const post = data[0].data.children[0].data;
+		// Verificar si el post es un video y no está marcado como NSFW
+		if (post.post_hint === "hosted:video" && (!post.over_18 || nsfwEnabled)) {
+			// Si el post es el mismo que el anterior, obtener otro
+			if (post.id === currentPost.id) {
+				getRandomVideo();
+				return;
+			}
+			// Guardar post actual y actualizar video y texto en la página
+			currentPost = post;
+			const video = document.getElementById("random-image");
+			video.src = post.media.reddit_video.fallback_url;
+			video.setAttribute("controls", true);
+			const postText = document.getElementById("post-text");
+			postText.innerHTML = `${post.title} by ${post.author}`;
+			postText.href = `https://reddit.com${post.permalink}`;
+		} else {
+			// Si el post no es un video o está marcado como NSFW, obtener otro
+			getRandomVideo();
+		}
+	})
+	.catch(error => console.error(error));
+}
+
+// Habilitar/deshabilitar NSFW
+function toggleNsfw() {
+nsfwEnabled = !nsfwEnabled;
+const nsfwButton = document.getElementById("toggle-nsfw");
+if (nsfwEnabled) {
+nsfwButton.textContent = "NSFW ON";
+} else {
+nsfwButton.textContent = "NSFW OFF";
+}
+}
+
+// Volver a intentar obtener una imagen aleatoria
+function retry() {
+if (currentPost.post_hint === "image") {
+getRandomImage();
+} else if (currentPost.post_hint === "hosted:video") {
+getRandomVideo();
+}
+}
+
+// Eventos de teclado
+document.addEventListener("keyup", function(event) {
+if (event.key === "Enter") {
+getRandomImage();
+}
+});
+
+// Eventos declick en los botones
+document.getElementById("get-image-btn").addEventListener("click", getRandomImage);
+document.getElementById("get-video-btn").addEventListener("click", getRandomVideo);
+document.getElementById("toggle-nsfw").addEventListener("click", toggleNsfw);
+document.getElementById("retry-btn").addEventListener("click", retry);
