@@ -36,15 +36,36 @@
 		background-size: contain;
 		padding: 10px;
 	}
+    #image-text {
+	position: absolute;
+	top: 10;
+	left: 0;
+	padding: 100px;
+	font-size: 24px;
+	background-color: rgba(0, 0, 0, 0.7);
+	color: white;
+}
 
 	img {
 		display: block;
 		margin: auto;
-		max-width: 100%;
-		height: auto;
+		max-width: 70%;
+		height: 450px;
 		padding: 20px;
 	}
-</style>
+
+	#image-container {
+		position: relative;
+	}
+
+#image-container-inner {
+	height: 200px; /* ajuste la altura según sus necesidades */
+	max-width: 300%; /* ajuste el ancho máximo según sus necesidades */
+	margin: 0 auto;
+	position: relative;
+}
+
+	</style>
 <script>
 	let subreddit = "cats";
 	let nsfwEnabled = false;
@@ -72,6 +93,10 @@
 
 					let image = document.getElementById("random-image");
 					image.src = imageUrl;
+          let postText = randomPost.data.title;
+          
+  let postElement = document.getElementById("post-text");
+postElement.innerHTML = postText;
 				}
 			})
 			.catch(error => console.log(error));
@@ -130,6 +155,7 @@ function getRandomVideo() {
 
 <div id="image-container">
 	<img id="random-image" src="" alt="Random image from subreddit">
+  <p id="post-text"></p>
 </div>
 
 <div id="buttons-container">
