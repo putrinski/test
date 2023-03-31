@@ -73,38 +73,41 @@
 <script>
 	let subreddit = "cats";
 	let nsfwEnabled = false;
+  let postLink = "";
+
 
 	function getRandomImage() {
-		subreddit = document.getElementById("subreddit-input").value.trim();
+  subreddit = document.getElementById("subreddit-input").value.trim();
 
-	
-		let url = `https://www.reddit.com/r/${subreddit}/.json?limit=100`;
+  let url = `https://www.reddit.com/r/${subreddit}/.json?limit=100`;
 
-		fetch(url)
-			.then(response => response.json())
-			.then(data => {
-				let posts = data.data.children.filter(post => post.data.post_hint === "image");
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      let posts = data.data.children.filter(post => post.data.post_hint === "image");
 
-				if (!nsfwEnabled) {
-					posts = posts.filter(post => !post.data.over_18);
-				}
+      if (!nsfwEnabled) {
+        posts = posts.filter(post => !post.data.over_18);
+      }
 
-				if (posts.length === 0) {
-					alert("No images found. Try again with a different subreddit.");
-				} else {
-					let randomPost = posts[Math.floor(Math.random() * posts.length)];
-					let imageUrl = randomPost.data.url;
+      if (posts.length === 0) {
+        alert("No images found. Try again with a different subreddit.");
+      } else {
+        let randomPost = posts[Math.floor(Math.random() * posts.length)];
+        let imageUrl = randomPost.data.url;
+        postLink = `https://www.reddit.com${randomPost.data.permalink}`;
 
-					let image = document.getElementById("random-image");
-					image.src = imageUrl;
-          let postText = randomPost.data.title;
-          
-  let postElement = document.getElementById("post-text");
-postElement.innerHTML = postText;
-				}
-			})
-			.catch(error => console.log(error));
-	}
+        let image = document.getElementById("random-image");
+        image.src = imageUrl;
+        let postText = randomPost.data.title;
+
+        let postElement = document.getElementById("post-text");
+        postElement.innerHTML = postText;
+      }
+    })
+    .catch(error => console.log(error));
+}
+
 function getRandomVideo() {
 	subreddit = document.getElementById("subreddit-input").value.trim();
 
@@ -170,6 +173,8 @@ function getRandomVideo() {
   <button id="get-random-video" onclick="getRandomVideo()">Get Random Video</button>
 	<button id="toggle-nsfw" onclick="toggleNsfw()">NSFW OFF</button>
 	<button id="retry-button" class="retry-button" onclick="getRandomImage()"></button>
+  <button id="post-link" onclick="window.open(postLink)">Open Post</button>
+
 </div>
 
 <script>
