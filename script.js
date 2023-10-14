@@ -42,40 +42,38 @@ getRandomImage();
 
 // Obtener video aleatorio de Reddit
 function getRandomVideo() {
-const subreddit = document.getElementById("subreddit-input").value.trim() || "videos";
+    subreddit = document.getElementById("subreddit-input").value.trim();
 
-// Si se ingresa un subreddit diferente al actual, limpiar post actual
-if (subreddit !== currentSubreddit) {
-	currentPost = {};
-}
+    let url = `https://www.reddit.com/r/${subreddit}/.json?limit=100`;
 
-// Obtener video aleatorio desde Reddit
-const url = `https://www.reddit.com/r/${subreddit}/random.json`;
-fetch(url)
-	.then(response => response.json())
-	.then(data => {
-		const post = data[0].data.children[0].data;
-		// Verificar si el post es un video y no está marcado como NSFW
-		if (post.post_hint === "hosted:video" && (!post.over_18 || nsfwEnabled)) {
-			// Si el post es el mismo que el anterior, obtener otro
-			if (post.id === currentPost.id) {
-				getRandomVideo();
-				return;
-			}
-			// Guardar post actual y actualizar video y texto en la página
-			currentPost = post;
-			const video = document.getElementById("random-image");
-			video.src = post.media.reddit_video.fallback_url;
-			video.setAttribute("controls", true);
-			const postText = document.getElementById("post-text");
-			postText.innerHTML = `${post.title} by ${post.author}`;
-			postText.href = `https://reddit.com${post.permalink}`;
-		} else {
-			// Si el post no es un video o está marcado como NSFW, obtener otro
-			getRandomVideo();
-		}
-	})
-	.catch(error => console.error(error));
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            let posts = data.data.children.filter(post => post.data.post_hint === "hosted:video");
+
+            if (!nsfwEnabled) {
+                posts = posts.filter(post => !post.data.over_18);
+            }
+
+            if (posts.length === 0) {
+                alert("No videos found. Try again with a different subreddit.");
+            } else {
+                let randomPost = posts[Math.floor(Math.random() * posts.length)];
+                let videoUrl = randomPost.data.media.reddit_video.fallback_url;
+
+                let video = document.createElement("video");
+                video.controls = true;
+                video.src = videoUrl;
+
+                let imageContainer = document.getElementById("image-container");
+                imageContainer.innerHTML = "";
+                imageContainer.appendChild(video);
+
+                // Actualizar el enlace al post del video
+                postLink = `https://www.reddit.com${randomPost.data.permalink}`;
+            }
+        })
+        .catch(error => console.log(error));
 }
 
 // Habilitar/deshabilitar NSFW
