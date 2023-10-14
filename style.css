@@ -1,6 +1,9 @@
 body {
 	font-family: sans-serif;
 }
+  background-color: #030303; /* Debe coincidir con el color de fondo deseado */
+  /* ...otros estilos... */
+}
 
 #small-image {
   position: absolute;
