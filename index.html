@@ -3,67 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lanzamiento Divertido</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <title>Flappy Bird Personalizable</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         body {
+            font-family: 'Press Start 2P', cursive;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
+            background-color: #87CEEB; /* Color de fondo del cielo por defecto */
             margin: 0;
-            background-color: #87CEEB; /* Sky blue */
-            font-family: Arial, sans-serif;
-            overflow: hidden; /* Evitar scrollbars por el canvas */
+            overflow: hidden; /* Evita barras de desplazamiento */
         }
-        h1 {
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            margin-bottom: 10px;
-        }
-        #game-container {
-            background-color: #f0f0f0; /* Color de fondo del contenedor del juego */
+        .game-container {
+            background-color: #fff; /* Fondo del contenedor del juego */
+            padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
-            position: relative; /* Para posicionar el canvas y otros elementos si es necesario */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            text-align: center;
         }
         canvas {
+            border: 2px solid #000;
             display: block;
-            background-color: transparent; /* El fondo del canvas puede ser transparente si el container tiene color */
-            border-radius: 10px; /* Si el contenedor tiene borde redondeado */
-        }
-        #controls {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-        }
-        button {
-            padding: 10px 15px;
-            font-size: 16px;
-            color: white;
-            background-color: #ff6347; /* Tomato */
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: background-color 0.3s ease, transform 0.1s ease;
-        }
-        button:hover {
-            background-color: #e5533d;
-        }
-        button:active {
-            transform: scale(0.98);
+            margin: 0 auto;
+            background-color: #70c5ce; /* Color de fondo del canvas por defecto */
+            /* Para usar una imagen de fondo en el canvas, descomenta lo siguiente y ajusta la URL: */
+            /* background-image: url('path/to/your/background-image.png'); */
+            /* background-size: cover; */
+            border-radius: 8px;
         }
         #score {
-            font-size: 20px;
-            font-weight: bold;
-            color: #fff;
-            margin-top: 5px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+            font-size: 24px;
+            margin-top: 10px;
+            color: #333;
         }
-         /* Estilo para el mensaje de victoria/derrota */
-        #message {
+        .controls {
+            margin-top: 15px;
+        }
+        button {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #4CAF50; /* Color verde */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        #messageOverlay {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -72,454 +74,318 @@
             color: white;
             padding: 20px;
             border-radius: 10px;
-            font-size: 24px;
+            font-size: 20px;
             text-align: center;
-            display: none; /* Oculto por defecto */
-            z-index: 100;
+            z-index: 100; /* Asegura que esté sobre el canvas */
         }
     </style>
 </head>
 <body>
-    <h1>Lanzamiento Divertido</h1>
-    <div id="score">Puntuación: 0</div>
-    <div id="game-container">
-        <canvas id="gameCanvas"></canvas>
-        <div id="message"></div>
-    </div>
-    <div id="controls">
-        <button id="resetButton">Reiniciar Nivel</button>
-        <button id="nextBirdButton" disabled>Siguiente Pájaro (3)</button>
+    <div class="game-container">
+        <h1 class="text-3xl mb-4">Flappy Bird</h1>
+        <canvas id="gameCanvas" width="320" height="480"></canvas>
+        <div id="score" class="text-2xl mt-2">Puntuación: 0</div>
+        <div class="controls">
+            <button id="startButton">Iniciar Juego</button>
+            <button id="restartButton" style="display:none;">Reiniciar</button>
+        </div>
+        <div id="messageOverlay" style="display:none;"></div>
     </div>
 
     <script>
-        // --- Matter.js Aliases ---
-        const Engine = Matter.Engine;
-        const Render = Matter.Render;
-        const Runner = Matter.Runner;
-        const World = Matter.World;
-        const Bodies = Matter.Bodies;
-        const Body = Matter.Body;
-        const Constraint = Matter.Constraint;
-        const Mouse = Matter.Mouse;
-        const MouseConstraint = Matter.MouseConstraint;
-        const Events = Matter.Events;
-        const Composite = Matter.Composite; // Para acceder a todos los cuerpos del mundo
-
-        // --- Game Configuration ---
-        const canvasWidth = 800;
-        const canvasHeight = 600;
-        
-        // ** ART CONFIGURATION - ¡AQUÍ PUEDES CAMBIAR EL ARTE! **
-        const ART_ASSETS = {
-            bird: {
-                type: 'color', // 'color' o 'image'
-                value: '#FF3B30', // Color si type es 'color' (rojo)
-                // value: 'path/to/your/bird-image.png', // Ruta a la imagen si type es 'image'
-                radius: 20,
-                density: 0.004 // Afecta qué tan pesado es y cómo vuela
-            },
-            pig: {
-                type: 'color',
-                value: '#4CD964', // Color si type es 'color' (verde)
-                // value: 'path/to/your/pig-image.png',
-                radius: 25, // Los "cerdos" serán círculos
-                health: 100 // Salud del cerdo
-            },
-            box: {
-                type: 'color',
-                value: '#8E5E2E', // Color si type es 'color' (marrón madera)
-                // value: 'path/to/your/box-image.png',
-                width: 60,
-                height: 60,
-                health: 150 // Salud de la caja
-            },
-            ground: {
-                color: '#5C3317' // Marrón oscuro para el suelo
-            },
-            slingshot: {
-                color: '#333333' // Gris oscuro para la resortera
-            }
-        };
-
-        // --- Game State ---
-        let engine;
-        let render;
-        let runner;
-        let world;
-        let bird;
-        let slingshotConstraint;
-        let isBirdLaunched = false;
-        let ground;
-        let targets = []; // Array para guardar los objetivos (cerdos y cajas)
-        let score = 0;
-        let birdsRemaining = 3;
-        let currentBirdIndex = 0;
-
-        // --- DOM Elements ---
         const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
         const scoreDisplay = document.getElementById('score');
-        const resetButton = document.getElementById('resetButton');
-        const nextBirdButton = document.getElementById('nextBirdButton');
-        const messageDisplay = document.getElementById('message');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        const messageOverlay = document.getElementById('messageOverlay');
 
-        // --- Initialization ---
-        function init() {
-            // Engine
-            engine = Engine.create();
-            world = engine.world;
-            world.gravity.y = 1; // Gravedad estándar
+        // --- CONFIGURACIÓN DEL JUEGO Y PERSONALIZACIÓN DE ARTE ---
+        // Puedes cambiar estos valores para modificar la apariencia y la jugabilidad.
 
-            // Renderer
-            render = Render.create({
-                canvas: canvas,
-                engine: engine,
-                options: {
-                    width: canvasWidth,
-                    height: canvasHeight,
-                    wireframes: false, // ¡Poner en true para ver las colisiones, false para ver colores/sprites!
-                    background: 'transparent' // El fondo del canvas es transparente
-                }
-            });
-            Render.run(render);
-
-            // Runner
-            runner = Runner.create();
-            Runner.run(runner, engine);
-
-            // Mouse Control
-            const mouse = Mouse.create(render.canvas);
-            const mouseConstraint = MouseConstraint.create(engine, {
-                mouse: mouse,
-                constraint: {
-                    stiffness: 0.1, // Más bajo para que sea más elástico
-                    render: {
-                        visible: false // No mostrar la restricción del mouse
-                    }
-                }
-            });
-            World.add(world, mouseConstraint);
-            render.mouse = mouse; // Permite interacciones como arrastrar
-
-            // Game Objects
-            setupLevel();
-            
-            // Event Listeners
-            Events.on(mouseConstraint, 'enddrag', (event) => {
-                if (event.body === bird && !isBirdLaunched) {
-                    isBirdLaunched = true;
-                    // Eliminar la restricción de la resortera cuando se lanza
-                    if (slingshotConstraint) {
-                        World.remove(world, slingshotConstraint);
-                        slingshotConstraint = null; // Importante para que no se vuelva a unir
-                    }
-                    nextBirdButton.disabled = false;
-                }
-            });
-
-            Events.on(engine, 'afterUpdate', () => {
-                // Lógica después de cada actualización del motor de físicas
-                // Comprobar si el pájaro salió de los límites o se detuvo
-                if (isBirdLaunched && bird) {
-                    if (bird.position.y > canvasHeight + 50 || bird.position.x < -50 || bird.position.x > canvasWidth + 50 || 
-                        (bird.velocity.x < 0.1 && bird.velocity.y < 0.1 && bird.angularVelocity < 0.01 && bird.speed < 0.5)) {
-                        // Considerar el pájaro como "terminado" si está muy lento o fuera de pantalla
-                        // Esto es una simplificación, podrías querer un temporizador
-                        if (birdsRemaining > 0 && !nextBirdButton.disabled) {
-                           // El botón "Siguiente Pájaro" ya está habilitado, el jugador puede presionarlo
-                        } else if (birdsRemaining <= 0 && targets.some(t => t.health > 0)) {
-                            // No quedan pájaros y aún hay objetivos
-                            checkWinCondition(true); // Forzar chequeo de derrota
-                        }
-                    }
-                }
-                
-                // Comprobar colisiones para daño (simplificado)
-                targets.forEach(target => {
-                    if (target.health <= 0 && world.bodies.includes(target.body)) {
-                        World.remove(world, target.body);
-                        updateScore(target.type === 'pig' ? 100 : 50); // Más puntos por cerdos
-                        // Quitar del array de targets para no seguir procesándolo
-                        targets = targets.filter(t => t !== target);
-                        checkWinCondition();
-                    }
-                });
-            });
-
-            Events.on(engine, 'collisionStart', (event) => {
-                const pairs = event.pairs;
-                pairs.forEach(pair => {
-                    const bodyA = pair.bodyA;
-                    const bodyB = pair.bodyB;
-
-                    // Identificar si uno es el pájaro y el otro un objetivo
-                    let targetObject = null;
-                    let otherBody = null;
-
-                    if (bodyA === bird) {
-                        targetObject = targets.find(t => t.body === bodyB);
-                        otherBody = bodyB;
-                    } else if (bodyB === bird) {
-                        targetObject = targets.find(t => t.body === bodyA);
-                        otherBody = bodyA;
-                    } else { // Colisión entre dos partes del escenario (ej. caja con caja)
-                        const targetA = targets.find(t => t.body === bodyA);
-                        const targetB = targets.find(t => t.body === bodyB);
-                        if (targetA) dealDamage(targetA, calculateImpactDamage(pair.collision.depth * 5)); // Daño por impacto
-                        if (targetB) dealDamage(targetB, calculateImpactDamage(pair.collision.depth * 5));
-                        return;
-                    }
-                    
-                    if (targetObject) {
-                        // Calcular daño basado en la velocidad del impacto (simplificado)
-                        const impactVelocity = bird.speed; // bird.velocity.magnitude no existe, usamos speed
-                        const damage = calculateImpactDamage(impactVelocity);
-                        dealDamage(targetObject, damage);
-                    }
-                });
-            });
-
-            resetButton.addEventListener('click', resetGame);
-            nextBirdButton.addEventListener('click', loadNextBird);
-
-            updateScoreDisplay();
-            updateNextBirdButton();
-        }
-        
-        function calculateImpactDamage(velocity) {
-            // Ajusta estos valores para balancear el juego
-            return Math.min(Math.floor(velocity * 10), 50); // Daño máximo de 50 por impacto directo del pájaro
-        }
-
-        function dealDamage(target, amount) {
-            if (target && target.health > 0) {
-                target.health -= amount;
-                // Efecto visual simple: cambiar color brevemente o parpadear (opcional)
-                // Por ahora, solo reducimos la salud. La comprobación de "muerte" está en afterUpdate.
-            }
-        }
-
-        function createGameObject(x, y, assetConfig, options = {}) {
-            let body;
-            const renderOptions = {};
-
-            if (assetConfig.type === 'image' && assetConfig.value) {
-                renderOptions.sprite = { 
-                    texture: assetConfig.value,
-                    xScale: (options.width || assetConfig.radius * 2) / (options.originalWidth || 50), // Necesitas el tamaño original de tu imagen
-                    yScale: (options.height || assetConfig.radius * 2) / (options.originalHeight || 50)
-                };
-            } else {
-                renderOptions.fillStyle = assetConfig.value || '#cccccc';
-            }
-
-            if (options.isStatic) {
-                options.isStatic = true;
-            }
-            
-            const bodyOptions = { 
-                render: renderOptions, 
-                density: assetConfig.density || 0.001, // Densidad por defecto
-                friction: assetConfig.friction || 0.7,
-                restitution: assetConfig.restitution || 0.1, // Cuánto rebota
-                ...options 
+        // Pájaro
+        const birdConfig = {
+            x: 50,
+            y: canvas.height / 2,
+            width: 34, // Ancho del pájaro (ajusta si usas imagen)
+            height: 24, // Alto del pájaro (ajusta si usas imagen)
+            color: 'yellow', // Color por defecto si no usas imagen
+            gravity: 0.4, // Aceleración hacia abajo
+            lift: -8,     // Impulso hacia arriba al saltar
+            velocityY: 0,
+            imageSrc: null, // Ruta a tu imagen del pájaro: 'path/to/your/bird.png'
+            // Ejemplo: imageSrc: 'https://placehold.co/34x24/FFFF00/000000?text=Bird'
+        };
+        let birdImage = null;
+        if (birdConfig.imageSrc) {
+            birdImage = new Image();
+            birdImage.src = birdConfig.imageSrc;
+            birdImage.onerror = () => {
+                console.error("Error al cargar la imagen del pájaro. Usando color por defecto.");
+                birdImage = null; // Vuelve a usar el color si la imagen falla
             };
-
-
-            if (assetConfig.radius) { // Es un círculo (pájaro, cerdo)
-                body = Bodies.circle(x, y, assetConfig.radius, bodyOptions);
-            } else { // Es un rectángulo (caja)
-                body = Bodies.rectangle(x, y, assetConfig.width, assetConfig.height, bodyOptions);
-            }
-            return body;
         }
 
-        function setupLevel() {
-            // Limpiar mundo anterior si existe
-            if (world && Composite.allBodies(world).length > 0) {
-                 World.clear(world, false); // false para no limpiar el engine
-                 targets = []; // Limpiar array de objetivos
-            }
-
-            // Ground
-            ground = Bodies.rectangle(canvasWidth / 2, canvasHeight - 25, canvasWidth, 50, {
-                isStatic: true,
-                render: { fillStyle: ART_ASSETS.ground.color }
-            });
-            World.add(world, ground);
-
-            // Slingshot position
-            const slingshotX = 150;
-            const slingshotY = canvasHeight - 200;
-
-            // Crear el primer pájaro
-            loadBird(slingshotX, slingshotY);
-            
-            // Crear la resortera (visual, no funcional como constraint aún)
-            const slingPart1 = Bodies.rectangle(slingshotX - 10, slingshotY + 20, 10, 60, { 
-                isStatic: true, 
-                render: { fillStyle: ART_ASSETS.slingshot.color }
-            });
-            const slingPart2 = Bodies.rectangle(slingshotX + 10, slingshotY + 20, 10, 60, { 
-                isStatic: true, 
-                render: { fillStyle: ART_ASSETS.slingshot.color }
-            });
-            World.add(world, [slingPart1, slingPart2]);
-
-
-            // --- ESTRUCTURA DE EJEMPLO ---
-            // Base
-            let box1 = createGameObject(canvasWidth - 200, canvasHeight - 50 - ART_ASSETS.box.height/2, ART_ASSETS.box, { health: ART_ASSETS.box.health });
-            targets.push({ body: box1, type: 'box', health: ART_ASSETS.box.health });
-            
-            let box2 = createGameObject(canvasWidth - 130, canvasHeight - 50 - ART_ASSETS.box.height/2, ART_ASSETS.box, { health: ART_ASSETS.box.health });
-            targets.push({ body: box2, type: 'box', health: ART_ASSETS.box.health });
-
-            // Primer nivel
-            let pig1 = createGameObject(canvasWidth - 165, canvasHeight - 50 - ART_ASSETS.box.height - ART_ASSETS.pig.radius, ART_ASSETS.pig, { health: ART_ASSETS.pig.health });
-            targets.push({ body: pig1, type: 'pig', health: ART_ASSETS.pig.health });
-            
-            let box3 = createGameObject(canvasWidth - 200, canvasHeight - 50 - ART_ASSETS.box.height * 1.5 - ART_ASSETS.box.height/2, ART_ASSETS.box, { health: ART_ASSETS.box.health });
-            targets.push({ body: box3, type: 'box', health: ART_ASSETS.box.health });
-            
-            let box4 = createGameObject(canvasWidth - 130, canvasHeight - 50 - ART_ASSETS.box.height * 1.5 - ART_ASSETS.box.height/2, ART_ASSETS.box, { health: ART_ASSETS.box.health });
-            targets.push({ body: box4, type: 'box', health: ART_ASSETS.box.health });
-
-            // Techo
-             let box5 = createGameObject(canvasWidth - 165, canvasHeight - 50 - ART_ASSETS.box.height * 2.5 - ART_ASSETS.box.height/2, ART_ASSETS.box, { health: ART_ASSETS.box.health, width: ART_ASSETS.box.width * 2.5}); // Caja más ancha
-            targets.push({ body: box5, type: 'box', health: ART_ASSETS.box.health });
-            
-            // Cerdo arriba
-            let pig2 = createGameObject(canvasWidth - 165, canvasHeight - 50 - ART_ASSETS.box.height * 3 - ART_ASSETS.pig.radius, ART_ASSETS.pig, { health: ART_ASSETS.pig.health });
-            targets.push({ body: pig2, type: 'pig', health: ART_ASSETS.pig.health });
-
-
-            World.add(world, targets.map(t => t.body)); // Añadir todos los cuerpos de los objetivos al mundo
-            
-            isBirdLaunched = false;
-            nextBirdButton.disabled = true;
-            messageDisplay.style.display = 'none';
+        // Tuberías
+        const pipeConfig = {
+            width: 50,
+            gap: 120,    // Espacio vertical entre tuberías
+            speed: 2,    // Velocidad a la que se mueven las tuberías
+            frequency: 120, // Cuántos frames antes de generar una nueva tubería (más bajo = más tuberías)
+            color: 'green', // Color por defecto si no usas imagen
+            imageTopSrc: null, // Ruta a tu imagen de tubería superior: 'path/to/pipe-top.png'
+            imageBottomSrc: null, // Ruta a tu imagen de tubería inferior: 'path/to/pipe-bottom.png'
+            // Ejemplo: imageTopSrc: 'https://placehold.co/50x200/008000/FFFFFF?text=PipeT'
+            // Ejemplo: imageBottomSrc: 'https://placehold.co/50x200/008000/FFFFFF?text=PipeB'
+        };
+        let pipeTopImage = null;
+        let pipeBottomImage = null;
+        if (pipeConfig.imageTopSrc) {
+            pipeTopImage = new Image();
+            pipeTopImage.src = pipeConfig.imageTopSrc;
+            pipeTopImage.onerror = () => { pipeTopImage = null; console.error("Error al cargar imagen tubería superior."); };
         }
-        
-        function loadBird(x, y) {
-            if (bird) { // Remover pájaro anterior si existe
-                World.remove(world, bird);
-            }
-            bird = createGameObject(x, y, ART_ASSETS.bird);
-            World.add(world, bird);
-
-            // Crear la restricción de la resortera
-            // El punto de anclaje de la resortera
-            const slingshotAnchor = { x: x, y: y }; 
-            slingshotConstraint = Constraint.create({
-                pointA: slingshotAnchor,
-                bodyB: bird,
-                stiffness: 0.03, // Más bajo para que sea más elástico
-                length: 5, // Longitud inicial muy corta para que esté "tenso"
-                render: {
-                    strokeStyle: ART_ASSETS.slingshot.color,
-                    lineWidth: 3
-                }
-            });
-            World.add(world, slingshotConstraint);
-            isBirdLaunched = false;
+        if (pipeConfig.imageBottomSrc) {
+            pipeBottomImage = new Image();
+            pipeBottomImage.src = pipeConfig.imageBottomSrc;
+            pipeBottomImage.onerror = () => { pipeBottomImage = null; console.error("Error al cargar imagen tubería inferior."); };
         }
 
-        function loadNextBird() {
-            if (birdsRemaining > 0 && bird) { // Solo si hay pájaros y el actual ya fue lanzado o se detuvo
-                World.remove(world, bird); // Quitar el pájaro actual
-                bird = null; // Limpiar referencia
-                
-                birdsRemaining--;
-                currentBirdIndex++;
-                
-                const slingshotX = 150;
-                const slingshotY = canvasHeight - 200;
-                loadBird(slingshotX, slingshotY);
-                
-                isBirdLaunched = false;
-                nextBirdButton.disabled = true; // Deshabilitar hasta que se lance el nuevo
-                updateNextBirdButton();
-            }
-             if (birdsRemaining <= 0) {
-                nextBirdButton.disabled = true; // No más pájaros
-                checkWinCondition(true); // Forzar chequeo si no quedan pájaros
+        // Fondo del Canvas (si no usas CSS para esto)
+        // Para usar una imagen de fondo directamente en el canvas (se dibujará en cada frame):
+        const backgroundConfig = {
+            imageSrc: null, // 'path/to/your/canvas-background.png'
+            // Ejemplo: imageSrc: 'https://placehold.co/320x480/87CEEB/FFFFFF?text=Fondo'
+        };
+        let backgroundImage = null;
+        if (backgroundConfig.imageSrc) {
+            backgroundImage = new Image();
+            backgroundImage.src = backgroundConfig.imageSrc;
+            backgroundImage.onerror = () => { backgroundImage = null; console.error("Error al cargar imagen de fondo del canvas."); };
+        }
+        // --- FIN DE CONFIGURACIÓN DEL JUEGO Y PERSONALIZACIÓN DE ARTE ---
+
+
+        let pipes = [];
+        let score = 0;
+        let gameFrames = 0;
+        let gameState = 'start'; // 'start', 'playing', 'gameOver'
+        let animationFrameId;
+
+        function drawBird() {
+            if (birdImage && birdImage.complete) {
+                // Dibuja la imagen del pájaro
+                ctx.drawImage(birdImage, birdConfig.x, birdConfig.y, birdConfig.width, birdConfig.height);
+            } else {
+                // Dibuja un rectángulo si no hay imagen o no ha cargado
+                ctx.fillStyle = birdConfig.color;
+                ctx.fillRect(birdConfig.x, birdConfig.y, birdConfig.width, birdConfig.height);
             }
         }
 
-        function updateScore(points = 0) {
-            score += points;
-            scoreDisplay.textContent = `Puntuación: ${score}`;
-        }
-        
-        function updateNextBirdButton() {
-            nextBirdButton.textContent = `Siguiente Pájaro (${birdsRemaining})`;
-            nextBirdButton.disabled = isBirdLaunched ? false : true;
-             if (birdsRemaining <= 0) {
-                nextBirdButton.disabled = true;
+        function updateBird() {
+            birdConfig.velocityY += birdConfig.gravity;
+            birdConfig.y += birdConfig.velocityY;
+
+            // Colisión con bordes superior/inferior
+            if (birdConfig.y + birdConfig.height > canvas.height || birdConfig.y < 0) {
+                gameOver();
             }
         }
 
-        function checkWinCondition(forceDefeatCheck = false) {
-            const remainingPigs = targets.filter(t => t.type === 'pig' && t.health > 0).length;
+        function birdFlap() {
+            if (gameState === 'playing') {
+                birdConfig.velocityY = birdConfig.lift;
+            }
+        }
 
-            if (remainingPigs === 0) {
-                messageDisplay.textContent = `¡Has Ganado! Puntuación: ${score}`;
-                messageDisplay.style.display = 'block';
-                // Deshabilitar más acciones o pájaros
-                if(bird) World.remove(world, bird);
-                if(slingshotConstraint) World.remove(world, slingshotConstraint);
-                nextBirdButton.disabled = true;
-                // Detener el runner para pausar la simulación
-                Runner.stop(runner);
-
-            } else if (birdsRemaining <= 0 && forceDefeatCheck) {
-                 // Comprobar si el pájaro actual (si existe) está prácticamente inmóvil
-                let birdIsStatic = true;
-                if (bird && bird.speed > 0.5) { // Si el pájaro aún se mueve significativamente
-                    birdIsStatic = false;
+        function drawPipes() {
+            pipes.forEach(pipe => {
+                // Tubería superior
+                if (pipeTopImage && pipeTopImage.complete) {
+                    ctx.drawImage(pipeTopImage, pipe.x, 0, pipeConfig.width, pipe.topPipeHeight);
+                } else {
+                    ctx.fillStyle = pipeConfig.color;
+                    ctx.fillRect(pipe.x, 0, pipeConfig.width, pipe.topPipeHeight);
                 }
 
-                if (birdIsStatic) { // Si no quedan pájaros Y el último pájaro está quieto Y aún hay cerdos
-                    messageDisplay.textContent = `¡Fin del Juego! Puntuación: ${score}`;
-                    messageDisplay.style.display = 'block';
-                    Runner.stop(runner);
+                // Tubería inferior
+                if (pipeBottomImage && pipeBottomImage.complete) {
+                    ctx.drawImage(pipeBottomImage, pipe.x, pipe.bottomPipeY, pipeConfig.width, canvas.height - pipe.bottomPipeY);
+                } else {
+                    ctx.fillStyle = pipeConfig.color;
+                    ctx.fillRect(pipe.x, pipe.bottomPipeY, pipeConfig.width, canvas.height - pipe.bottomPipeY);
                 }
+            });
+        }
+
+        function updatePipes() {
+            if (gameFrames % pipeConfig.frequency === 0) {
+                const topPipeHeight = Math.random() * (canvas.height / 2 - pipeConfig.gap / 2) + 50; // Altura aleatoria para la tubería superior
+                const bottomPipeY = topPipeHeight + pipeConfig.gap;
+                pipes.push({
+                    x: canvas.width,
+                    topPipeHeight: topPipeHeight,
+                    bottomPipeY: bottomPipeY,
+                    passed: false
+                });
+            }
+
+            pipes.forEach(pipe => {
+                pipe.x -= pipeConfig.speed;
+
+                // Colisión con el pájaro
+                if (
+                    birdConfig.x < pipe.x + pipeConfig.width &&
+                    birdConfig.x + birdConfig.width > pipe.x &&
+                    (birdConfig.y < pipe.topPipeHeight || birdConfig.y + birdConfig.height > pipe.bottomPipeY)
+                ) {
+                    gameOver();
+                }
+
+                // Incrementar puntuación
+                if (pipe.x + pipeConfig.width < birdConfig.x && !pipe.passed) {
+                    score++;
+                    pipe.passed = true;
+                    scoreDisplay.textContent = `Puntuación: ${score}`;
+                }
+            });
+
+            // Eliminar tuberías que han salido de la pantalla
+            pipes = pipes.filter(pipe => pipe.x + pipeConfig.width > 0);
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Si tienes una imagen de fondo para el canvas, dibújala aquí primero
+            if (backgroundImage && backgroundImage.complete) {
+                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            } else if (!backgroundImage && !document.documentElement.style.getPropertyValue('--canvas-bg-image')) {
+                 // Si no hay imagen de fondo en JS ni en CSS, usa el color de fondo del canvas de CSS
+                 // o un color por defecto si no está definido en CSS.
+                 // Esto ya se maneja con el `background-color` del canvas en CSS.
+                 // Si quieres un color dinámico desde JS:
+                 // ctx.fillStyle = '#70c5ce'; // Color de fondo por defecto del canvas
+                 // ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
         }
 
-        function resetGame() {
-            // Detener el runner actual si está corriendo
-            if (runner && runner.enabled) {
-                 Runner.stop(runner);
+        function showMessage(text, duration = 0) {
+            messageOverlay.textContent = text;
+            messageOverlay.style.display = 'block';
+            if (duration > 0) {
+                setTimeout(() => {
+                    messageOverlay.style.display = 'none';
+                }, duration * 1000);
             }
-            if (render) {
-                Render.stop(render);
+        }
+
+        function hideMessage() {
+            messageOverlay.style.display = 'none';
+        }
+
+        function gameLoop() {
+            if (gameState !== 'playing') {
+                if (gameState === 'gameOver') {
+                    showMessage(`¡Juego Terminado!\nPuntuación Final: ${score}\n\nPresiona Reiniciar`);
+                }
+                return;
             }
-            // Limpiar el mundo y el motor completamente
-            if (world) World.clear(world, false); // false para no limpiar el engine
-            if (engine) Engine.clear(engine);
 
+            clearCanvas();
+            updateBird();
+            drawBird();
+            updatePipes();
+            drawPipes();
 
-            // Reinicializar variables de estado del juego
+            gameFrames++;
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            if (gameState === 'playing') return;
+
+            // Resetear estado del juego
+            birdConfig.y = canvas.height / 2;
+            birdConfig.velocityY = 0;
+            pipes = [];
             score = 0;
-            birdsRemaining = 3;
-            currentBirdIndex = 0;
-            targets = [];
-            bird = null;
-            slingshotConstraint = null;
-            
-            updateScoreDisplay();
-            updateNextBirdButton();
-            messageDisplay.style.display = 'none';
+            gameFrames = 0;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+            gameState = 'playing';
 
-            // Re-inicializar el juego
-            init(); // Esto creará un nuevo engine, world, runner, etc.
+            startButton.style.display = 'none';
+            restartButton.style.display = 'inline-block';
+            hideMessage();
+
+            // Cancelar animación anterior si existe
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            gameLoop();
+        }
+
+        function gameOver() {
+            if (gameState === 'gameOver') return; // Evitar múltiples llamadas
+            gameState = 'gameOver';
+            cancelAnimationFrame(animationFrameId); // Detener el bucle del juego
+            // El mensaje de Game Over se mostrará en el próximo ciclo de gameLoop
+            // o directamente si se llama desde fuera del bucle.
+             showMessage(`¡Juego Terminado!\nPuntuación Final: ${score}\n\nPresiona Reiniciar`);
         }
 
 
-        // --- Start Game ---
+        function showStartScreen() {
+            clearCanvas();
+            // Dibujar mensaje de inicio
+            ctx.fillStyle = 'black';
+            ctx.font = '20px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText('¡Prepárate!', canvas.width / 2, canvas.height / 2 - 30);
+            ctx.font = '14px "Press Start 2P"';
+            ctx.fillText('Haz clic o toca para saltar', canvas.width / 2, canvas.height / 2);
+            ctx.fillText('Presiona "Iniciar Juego"', canvas.width / 2, canvas.height / 2 + 30);
+
+            drawBird(); // Dibuja el pájaro en su posición inicial
+            startButton.style.display = 'inline-block';
+            restartButton.style.display = 'none';
+        }
+
+        // Event Listeners
+        canvas.addEventListener('click', () => {
+            if (gameState === 'playing') {
+                birdFlap();
+            } else if (gameState === 'start') {
+                // Podrías iniciar el juego al hacer clic en el canvas también
+                // startGame();
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                 e.preventDefault(); // Evita que la página haga scroll
+                if (gameState === 'playing') {
+                    birdFlap();
+                } else if (gameState === 'start' && startButton.style.display !== 'none') {
+                    // startGame(); // Inicia si la pantalla de inicio está activa y se presiona espacio
+                } else if (gameState === 'gameOver' && restartButton.style.display !== 'none') {
+                    // startGame(); // Reinicia si es game over y se presiona espacio
+                }
+            }
+        });
+
+        startButton.addEventListener('click', () => {
+            gameState = 'start'; // Asegura que estamos en estado 'start' antes de realmente empezar
+            startGame();
+        });
+
+        restartButton.addEventListener('click', () => {
+            gameState = 'start'; // Vuelve al estado inicial para reiniciar correctamente
+            startGame();
+        });
+
+        // Inicializar el juego mostrando la pantalla de inicio
         window.onload = () => {
-            init();
+            showStartScreen();
         };
 
     </script>
