@@ -3,428 +3,525 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego de Matemáticas Multimodo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Lanzamiento Divertido</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #e0f2fe; /* Lighter blue background */
-            margin: 0;
-            padding: 16px;
-            overflow-x: hidden;
-        }
-        .game-container {
-            background-color: #ffffff;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 100%;
-            max-width: 500px; /* Wider for more options */
-        }
-        .screen {
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-        .title {
-            font-size: 2rem; /* Larger title */
-            font-weight: 700;
-            color: #0c4a6e; /* Darker cyan-blue */
-            margin-bottom: 24px;
-        }
-        .subtitle {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #0e7490; /* Cyan-blue */
-            margin-bottom: 20px;
-        }
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        .mode-button, .difficulty-button, .option-button, .control-button {
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            padding: 12px 18px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.1s ease;
-            display: flex;
             justify-content: center;
-            align-items: center;
-            text-align: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #87CEEB; /* Sky blue */
+            font-family: Arial, sans-serif;
+            overflow: hidden; /* Evitar scrollbars por el canvas */
         }
-        .mode-button { background-color: #0ea5e9; } /* Sky blue */
-        .mode-button:hover { background-color: #0284c7; }
-        .difficulty-button { background-color: #14b8a6; } /* Teal */
-        .difficulty-button:hover { background-color: #0d9488; }
-        .option-button { background-color: #3b82f6; font-size: 1.4rem; padding: 16px; } /* Blue */
-        .option-button:hover { background-color: #2563eb; }
-        .option-button:active { transform: scale(0.95); }
-        .option-button:disabled { background-color: #9ca3af; cursor: not-allowed; }
-        .control-button { background-color: #f97316; } /* Orange */
-        .control-button:hover { background-color: #ea580c; }
-
-        .problem {
-            font-size: 2.8rem; /* Even larger for emphasis */
-            font-weight: 700;
-            color: #1e3a8a;
-            margin-bottom: 24px;
-            min-height: 50px; /* Ensure space */
+        h1 {
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
         }
-        .options-grid-game { /* Renamed to avoid conflict */
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
+        #game-container {
+            background-color: #f0f0f0; /* Color de fondo del contenedor del juego */
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            position: relative; /* Para posicionar el canvas y otros elementos si es necesario */
         }
-        .stats-container {
+        canvas {
+            display: block;
+            background-color: transparent; /* El fondo del canvas puede ser transparente si el container tiene color */
+            border-radius: 10px; /* Si el contenedor tiene borde redondeado */
+        }
+        #controls {
+            margin-top: 15px;
             display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin-bottom: 16px;
-            width: 100%;
+            gap: 10px;
         }
-        .score, .lives, .feedback {
-            font-size: 1.25rem;
-            font-weight: 500;
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            color: white;
+            background-color: #ff6347; /* Tomato */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease, transform 0.1s ease;
         }
-        .score { color: #166534; }
-        .lives { color: #b91c1c; }
-        .feedback { min-height: 30px; margin-bottom: 16px; width: 100%; }
-        .feedback.correct { color: #16a34a; }
-        .feedback.incorrect { color: #dc2626; }
-        .game-over-message {
-            font-size: 1.75rem;
-            font-weight: 600;
-            color: #c2410c;
-            margin-bottom: 20px;
+        button:hover {
+            background-color: #e5533d;
         }
-        .hidden { display: none !important; } /* Important to override other display styles */
-
-        /* Mobile specific adjustments */
-        @media (max-width: 480px) {
-            .title { font-size: 1.6rem; }
-            .subtitle { font-size: 1.3rem; }
-            .problem { font-size: 2.2rem; }
-            .mode-button, .difficulty-button, .option-button, .control-button { font-size: 1rem; padding: 10px 15px; }
-            .option-button { font-size: 1.2rem; padding: 14px; }
-            .score, .lives, .feedback { font-size: 1.1rem; }
-            .game-container { padding: 16px; }
+        button:active {
+            transform: scale(0.98);
+        }
+        #score {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            margin-top: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+        }
+         /* Estilo para el mensaje de victoria/derrota */
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            text-align: center;
+            display: none; /* Oculto por defecto */
+            z-index: 100;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-
-        <div id="mode-selection-screen" class="screen">
-            <h1 class="title">¡Juego de Matemáticas!</h1>
-            <h2 class="subtitle">Elige un modo de juego:</h2>
-            <div class="button-grid">
-                <button class="mode-button" data-mode="sum">Sumas</button>
-                <button class="mode-button" data-mode="subtract">Restas</button>
-                <button class="mode-button" data-mode="multiply">Multiplicación</button>
-            </div>
-        </div>
-
-        <div id="difficulty-selection-screen" class="screen hidden">
-            <h1 class="title" id="difficulty-title">Selecciona la Dificultad</h1>
-            <div class="button-grid">
-                <button class="difficulty-button" data-difficulty="easy">Fácil (1 dígito)</button>
-                <button class="difficulty-button" data-difficulty="normal">Normal (hasta 2 dígitos)</button>
-                <button class="difficulty-button" data-difficulty="hard">Difícil (hasta 4 dígitos)</button>
-            </div>
-            <button id="back-to-mode" class="control-button" style="margin-top: 20px;">Volver a Modos</button>
-        </div>
-
-        <div id="game-screen" class="screen hidden">
-            <h1 class="title" id="game-mode-title"></h1>
-            <div class="stats-container">
-                <div id="score" class="score">Puntuación: 0</div>
-                <div id="lives" class="lives">Vidas: 3</div>
-            </div>
-            <div id="problem" class="problem"></div>
-            <div id="options" class="options-grid-game">
-                </div>
-            <div id="feedback" class="feedback"></div>
-            <button id="back-to-difficulty" class="control-button hidden" style="margin-top: 10px;">Cambiar Dificultad</button>
-            <button id="back-to-main-menu" class="control-button" style="margin-top: 10px;">Menú Principal</button>
-        </div>
-
-        <div id="game-over-screen" class="screen hidden">
-            <div id="game-over-message" class="game-over-message">¡Juego Terminado!</div>
-            <div id="final-score" class="score" style="margin-bottom: 20px;"></div>
-            <button id="restart-button" class="difficulty-button" style="background-color: #10b981;">Jugar de Nuevo (Misma Config.)</button>
-            <button id="main-menu-from-game-over" class="control-button" style="margin-top: 10px;">Menú Principal</button>
-        </div>
+    <h1>Lanzamiento Divertido</h1>
+    <div id="score">Puntuación: 0</div>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="message"></div>
+    </div>
+    <div id="controls">
+        <button id="resetButton">Reiniciar Nivel</button>
+        <button id="nextBirdButton" disabled>Siguiente Pájaro (3)</button>
     </div>
 
     <script>
-        // Elementos del DOM
-        const modeSelectionScreen = document.getElementById('mode-selection-screen');
-        const difficultySelectionScreen = document.getElementById('difficulty-selection-screen');
-        const gameScreen = document.getElementById('game-screen');
-        const gameOverScreen = document.getElementById('game-over-screen');
+        // --- Matter.js Aliases ---
+        const Engine = Matter.Engine;
+        const Render = Matter.Render;
+        const Runner = Matter.Runner;
+        const World = Matter.World;
+        const Bodies = Matter.Bodies;
+        const Body = Matter.Body;
+        const Constraint = Matter.Constraint;
+        const Mouse = Matter.Mouse;
+        const MouseConstraint = Matter.MouseConstraint;
+        const Events = Matter.Events;
+        const Composite = Matter.Composite; // Para acceder a todos los cuerpos del mundo
 
-        const difficultyTitle = document.getElementById('difficulty-title');
-        const gameModeTitle = document.getElementById('game-mode-title');
+        // --- Game Configuration ---
+        const canvasWidth = 800;
+        const canvasHeight = 600;
         
-        const problemElement = document.getElementById('problem');
-        const optionsElement = document.getElementById('options');
-        const scoreElement = document.getElementById('score');
-        const livesElement = document.getElementById('lives');
-        const feedbackElement = document.getElementById('feedback');
-        
-        const gameOverMessageElement = document.getElementById('game-over-message');
-        const finalScoreElement = document.getElementById('final-score');
-
-        // Botones
-        const modeButtons = document.querySelectorAll('.mode-button');
-        const difficultyButtons = document.querySelectorAll('.difficulty-button');
-        const restartButton = document.getElementById('restart-button');
-        const backToModeButton = document.getElementById('back-to-mode');
-        const backToDifficultyButton = document.getElementById('back-to-difficulty');
-        const backToMainMenuButton = document.getElementById('back-to-main-menu');
-        const mainMenuFromGameOverButton = document.getElementById('main-menu-from-game-over');
-
-
-        let currentScore = 0;
-        let currentLives = 3;
-        const MAX_LIVES = 3;
-        let correctAnswer;
-        let problemTimeout;
-
-        let currentGameMode = ''; // 'sum', 'subtract', 'multiply'
-        let currentDifficulty = ''; // 'easy', 'normal', 'hard' (solo para sum/subtract)
-
-        // --- Navegación entre pantallas ---
-        function showScreen(screenElement) {
-            [modeSelectionScreen, difficultySelectionScreen, gameScreen, gameOverScreen].forEach(s => s.classList.add('hidden'));
-            screenElement.classList.remove('hidden');
-        }
-
-        modeButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                currentGameMode = button.dataset.mode;
-                if (currentGameMode === 'sum' || currentGameMode === 'subtract') {
-                    difficultyTitle.textContent = `Dificultad para ${currentGameMode === 'sum' ? 'Sumas' : 'Restas'}`;
-                    showScreen(difficultySelectionScreen);
-                } else if (currentGameMode === 'multiply') {
-                    currentDifficulty = 'easy'; // Multiplicación no tiene dificultad variable aquí
-                    startGame();
-                }
-            });
-        });
-
-        difficultyButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                currentDifficulty = button.dataset.difficulty;
-                startGame();
-            });
-        });
-
-        backToModeButton.addEventListener('click', () => showScreen(modeSelectionScreen));
-        
-        backToDifficultyButton.addEventListener('click', () => {
-            if (currentGameMode === 'sum' || currentGameMode === 'subtract') {
-                 showScreen(difficultySelectionScreen);
-            } else { // Para multiplicación, va directo a modos
-                 showScreen(modeSelectionScreen);
+        // ** ART CONFIGURATION - ¡AQUÍ PUEDES CAMBIAR EL ARTE! **
+        const ART_ASSETS = {
+            bird: {
+                type: 'color', // 'color' o 'image'
+                value: '#FF3B30', // Color si type es 'color' (rojo)
+                // value: 'path/to/your/bird-image.png', // Ruta a la imagen si type es 'image'
+                radius: 20,
+                density: 0.004 // Afecta qué tan pesado es y cómo vuela
+            },
+            pig: {
+                type: 'color',
+                value: '#4CD964', // Color si type es 'color' (verde)
+                // value: 'path/to/your/pig-image.png',
+                radius: 25, // Los "cerdos" serán círculos
+                health: 100 // Salud del cerdo
+            },
+            box: {
+                type: 'color',
+                value: '#8E5E2E', // Color si type es 'color' (marrón madera)
+                // value: 'path/to/your/box-image.png',
+                width: 60,
+                height: 60,
+                health: 150 // Salud de la caja
+            },
+            ground: {
+                color: '#5C3317' // Marrón oscuro para el suelo
+            },
+            slingshot: {
+                color: '#333333' // Gris oscuro para la resortera
             }
-        });
-        
-        backToMainMenuButton.addEventListener('click', () => showScreen(modeSelectionScreen));
-        mainMenuFromGameOverButton.addEventListener('click', () => showScreen(modeSelectionScreen));
-        restartButton.addEventListener('click', startGame); // Reinicia con la misma config
-
-        // --- Lógica del Juego ---
-        function getRandomInt(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        function startGame() {
-            currentScore = 0;
-            currentLives = MAX_LIVES;
-            updateScoreDisplay();
-            updateLivesDisplay();
-            feedbackElement.textContent = '';
-            feedbackElement.className = 'feedback';
-            
-            let modeText = "";
-            if (currentGameMode === 'sum') modeText = "Sumas";
-            else if (currentGameMode === 'subtract') modeText = "Restas";
-            else if (currentGameMode === 'multiply') modeText = "Multiplicación";
-
-            if (currentDifficulty && (currentGameMode === 'sum' || currentGameMode === 'subtract')) {
-                 let diffText = "";
-                 if(currentDifficulty === 'easy') diffText = "Fácil";
-                 else if(currentDifficulty === 'normal') diffText = "Normal";
-                 else if(currentDifficulty === 'hard') diffText = "Difícil";
-                 gameModeTitle.textContent = `${modeText} - ${diffText}`;
-                 backToDifficultyButton.classList.remove('hidden'); // Mostrar botón para cambiar dificultad
-            } else {
-                 gameModeTitle.textContent = modeText;
-                 backToDifficultyButton.classList.add('hidden'); // Ocultar si no aplica (multiplicación)
-            }
-            
-            showScreen(gameScreen);
-            enableOptionButtons(true);
-            generateProblem();
-        }
-
-        function updateScoreDisplay() {
-            scoreElement.textContent = `Puntuación: ${currentScore}`;
-        }
-
-        function updateLivesDisplay() {
-            livesElement.textContent = `Vidas: ${currentLives}`;
-        }
-        
-        function enableOptionButtons(enable) {
-            const buttons = optionsElement.querySelectorAll('.option-button');
-            buttons.forEach(button => button.disabled = !enable);
-        }
-
-        function generateProblem() {
-            clearTimeout(problemTimeout);
-            let num1, num2, problemText;
-
-            if (currentGameMode === 'sum') {
-                if (currentDifficulty === 'easy') { num1 = getRandomInt(0, 9); num2 = getRandomInt(0, 9); }
-                else if (currentDifficulty === 'normal') { num1 = getRandomInt(0, 99); num2 = getRandomInt(0, 99); }
-                else { num1 = getRandomInt(0, 9999); num2 = getRandomInt(0, 9999); } // hard
-                correctAnswer = num1 + num2;
-                problemText = `${num1} + ${num2} = ?`;
-            } else if (currentGameMode === 'subtract') {
-                if (currentDifficulty === 'easy') { num2 = getRandomInt(0, 9); num1 = getRandomInt(num2, 9); } // num1 >= num2
-                else if (currentDifficulty === 'normal') { num2 = getRandomInt(0, 99); num1 = getRandomInt(num2, 99); }
-                else { num2 = getRandomInt(0, 9999); num1 = getRandomInt(num2, 9999); } // hard
-                correctAnswer = num1 - num2;
-                problemText = `${num1} - ${num2} = ?`;
-            } else if (currentGameMode === 'multiply') {
-                num1 = getRandomInt(1, 10);
-                num2 = getRandomInt(1, 10);
-                correctAnswer = num1 * num2;
-                problemText = `${num1} × ${num2} = ?`;
-            }
-
-            problemElement.textContent = problemText;
-
-            const options = [correctAnswer];
-            let attempts = 0; // Para evitar bucles infinitos si es difícil generar opciones únicas
-            while (options.length < 4 && attempts < 20) {
-                let wrongAnswer;
-                const offsetRange = Math.max(1, Math.floor(Math.abs(correctAnswer * 0.2) + 1)); // Rango de desviación
-                const offset = getRandomInt(1, offsetRange + 5); // Aumentar un poco el rango para más variedad
-                wrongAnswer = correctAnswer + (Math.random() < 0.5 ? -offset : offset);
-                
-                if (currentGameMode === 'subtract' || currentGameMode === 'sum') {
-                     wrongAnswer = Math.max(0, wrongAnswer); // Evitar negativos en sumas/restas si no se desea
-                } else if (currentGameMode === 'multiply') {
-                    // Para multiplicación, las opciones incorrectas pueden ser más variadas
-                    let altNum1 = num1 + getRandomInt(-2,2);
-                    let altNum2 = num2 + getRandomInt(-2,2);
-                    altNum1 = Math.max(1, altNum1); // Mantener en rango de tabla
-                    altNum2 = Math.max(1, altNum2);
-                    if (Math.random() < 0.5) { // Generar opciones basadas en números cercanos
-                        wrongAnswer = altNum1 * num2;
-                    } else {
-                        wrongAnswer = num1 * altNum2;
-                    }
-                     if (wrongAnswer === correctAnswer && options.length < 3) { // Si coincide, intentar otra variación
-                        wrongAnswer = (num1 + (Math.random() < 0.5 ? 1 : -1)) * (num2 + (Math.random() < 0.5 ? 1 : -1));
-                        wrongAnswer = Math.max(0, wrongAnswer);
-                    }
-                }
-
-
-                if (!options.includes(wrongAnswer)) {
-                    options.push(wrongAnswer);
-                }
-                attempts++;
-            }
-            // Si después de los intentos no tenemos 4 opciones, rellenar con números secuenciales o aleatorios simples
-             while (options.length < 4) {
-                let filler = correctAnswer + options.length -1; // Simple filler
-                if (options.includes(filler) || filler < 0) filler = Math.max(0, correctAnswer - (options.length -1));
-                if (options.includes(filler) || filler < 0) filler = getRandomInt(Math.max(0, correctAnswer-10), correctAnswer+10);
-                if (!options.includes(filler)) options.push(filler);
-                else options.push(getRandomInt(0,100)); // Fallback muy genérico
-            }
-
-
-            shuffleArray(options);
-
-            optionsElement.innerHTML = '';
-            options.forEach(option => {
-                const button = document.createElement('button');
-                button.textContent = option;
-                button.classList.add('option-button');
-                button.addEventListener('click', () => checkAnswer(option));
-                optionsElement.appendChild(button);
-            });
-
-            feedbackElement.textContent = '';
-            feedbackElement.className = 'feedback';
-            enableOptionButtons(true);
-        }
-
-        function checkAnswer(selectedOption) {
-            if (currentLives <= 0) return;
-
-            enableOptionButtons(false);
-
-            if (selectedOption === correctAnswer) {
-                currentScore++;
-                feedbackElement.textContent = '¡Correcto!';
-                feedbackElement.className = 'feedback correct';
-                if (navigator.vibrate) navigator.vibrate(100);
-            } else {
-                currentLives--;
-                feedbackElement.textContent = `Incorrecto. La respuesta era ${correctAnswer}.`;
-                feedbackElement.className = 'feedback incorrect';
-                if (navigator.vibrate) navigator.vibrate([150, 50, 150]);
-                updateLivesDisplay();
-            }
-            updateScoreDisplay();
-
-            if (currentLives <= 0) {
-                gameOver();
-            } else {
-                problemTimeout = setTimeout(generateProblem, 1800); // Un poco más de tiempo para leer el feedback
-            }
-        }
-
-        function gameOver() {
-            clearTimeout(problemTimeout);
-            showScreen(gameOverScreen);
-            finalScoreElement.textContent = `Puntuación Final: ${currentScore}`;
-            gameOverMessageElement.textContent = currentScore > 7 ? "¡Excelente Trabajo!" : (currentScore > 3 ? "¡Muy Bien!" : "¡Juego Terminado!");
-            enableOptionButtons(false);
-        }
-
-        // Iniciar en la pantalla de selección de modo
-        window.onload = () => {
-            showScreen(modeSelectionScreen);
         };
+
+        // --- Game State ---
+        let engine;
+        let render;
+        let runner;
+        let world;
+        let bird;
+        let slingshotConstraint;
+        let isBirdLaunched = false;
+        let ground;
+        let targets = []; // Array para guardar los objetivos (cerdos y cajas)
+        let score = 0;
+        let birdsRemaining = 3;
+        let currentBirdIndex = 0;
+
+        // --- DOM Elements ---
+        const canvas = document.getElementById('gameCanvas');
+        const scoreDisplay = document.getElementById('score');
+        const resetButton = document.getElementById('resetButton');
+        const nextBirdButton = document.getElementById('nextBirdButton');
+        const messageDisplay = document.getElementById('message');
+
+        // --- Initialization ---
+        function init() {
+            // Engine
+            engine = Engine.create();
+            world = engine.world;
+            world.gravity.y = 1; // Gravedad estándar
+
+            // Renderer
+            render = Render.create({
+                canvas: canvas,
+                engine: engine,
+                options: {
+                    width: canvasWidth,
+                    height: canvasHeight,
+                    wireframes: false, // ¡Poner en true para ver las colisiones, false para ver colores/sprites!
+                    background: 'transparent' // El fondo del canvas es transparente
+                }
+            });
+            Render.run(render);
+
+            // Runner
+            runner = Runner.create();
+            Runner.run(runner, engine);
+
+            // Mouse Control
+            const mouse = Mouse.create(render.canvas);
+            const mouseConstraint = MouseConstraint.create(engine, {
+                mouse: mouse,
+                constraint: {
+                    stiffness: 0.1, // Más bajo para que sea más elástico
+                    render: {
+                        visible: false // No mostrar la restricción del mouse
+                    }
+                }
+            });
+            World.add(world, mouseConstraint);
+            render.mouse = mouse; // Permite interacciones como arrastrar
+
+            // Game Objects
+            setupLevel();
+            
+            // Event Listeners
+            Events.on(mouseConstraint, 'enddrag', (event) => {
+                if (event.body === bird && !isBirdLaunched) {
+                    isBirdLaunched = true;
+                    // Eliminar la restricción de la resortera cuando se lanza
+                    if (slingshotConstraint) {
+                        World.remove(world, slingshotConstraint);
+                        slingshotConstraint = null; // Importante para que no se vuelva a unir
+                    }
+                    nextBirdButton.disabled = false;
+                }
+            });
+
+            Events.on(engine, 'afterUpdate', () => {
+                // Lógica después de cada actualización del motor de físicas
+                // Comprobar si el pájaro salió de los límites o se detuvo
+                if (isBirdLaunched && bird) {
+                    if (bird.position.y > canvasHeight + 50 || bird.position.x < -50 || bird.position.x > canvasWidth + 50 || 
+                        (bird.velocity.x < 0.1 && bird.velocity.y < 0.1 && bird.angularVelocity < 0.01 && bird.speed < 0.5)) {
+                        // Considerar el pájaro como "terminado" si está muy lento o fuera de pantalla
+                        // Esto es una simplificación, podrías querer un temporizador
+                        if (birdsRemaining > 0 && !nextBirdButton.disabled) {
+                           // El botón "Siguiente Pájaro" ya está habilitado, el jugador puede presionarlo
+                        } else if (birdsRemaining <= 0 && targets.some(t => t.health > 0)) {
+                            // No quedan pájaros y aún hay objetivos
+                            checkWinCondition(true); // Forzar chequeo de derrota
+                        }
+                    }
+                }
+                
+                // Comprobar colisiones para daño (simplificado)
+                targets.forEach(target => {
+                    if (target.health <= 0 && world.bodies.includes(target.body)) {
+                        World.remove(world, target.body);
+                        updateScore(target.type === 'pig' ? 100 : 50); // Más puntos por cerdos
+                        // Quitar del array de targets para no seguir procesándolo
+                        targets = targets.filter(t => t !== target);
+                        checkWinCondition();
+                    }
+                });
+            });
+
+            Events.on(engine, 'collisionStart', (event) => {
+                const pairs = event.pairs;
+                pairs.forEach(pair => {
+                    const bodyA = pair.bodyA;
+                    const bodyB = pair.bodyB;
+
+                    // Identificar si uno es el pájaro y el otro un objetivo
+                    let targetObject = null;
+                    let otherBody = null;
+
+                    if (bodyA === bird) {
+                        targetObject = targets.find(t => t.body === bodyB);
+                        otherBody = bodyB;
+                    } else if (bodyB === bird) {
+                        targetObject = targets.find(t => t.body === bodyA);
+                        otherBody = bodyA;
+                    } else { // Colisión entre dos partes del escenario (ej. caja con caja)
+                        const targetA = targets.find(t => t.body === bodyA);
+                        const targetB = targets.find(t => t.body === bodyB);
+                        if (targetA) dealDamage(targetA, calculateImpactDamage(pair.collision.depth * 5)); // Daño por impacto
+                        if (targetB) dealDamage(targetB, calculateImpactDamage(pair.collision.depth * 5));
+                        return;
+                    }
+                    
+                    if (targetObject) {
+                        // Calcular daño basado en la velocidad del impacto (simplificado)
+                        const impactVelocity = bird.speed; // bird.velocity.magnitude no existe, usamos speed
+                        const damage = calculateImpactDamage(impactVelocity);
+                        dealDamage(targetObject, damage);
+                    }
+                });
+            });
+
+            resetButton.addEventListener('click', resetGame);
+            nextBirdButton.addEventListener('click', loadNextBird);
+
+            updateScoreDisplay();
+            updateNextBirdButton();
+        }
+        
+        function calculateImpactDamage(velocity) {
+            // Ajusta estos valores para balancear el juego
+            return Math.min(Math.floor(velocity * 10), 50); // Daño máximo de 50 por impacto directo del pájaro
+        }
+
+        function dealDamage(target, amount) {
+            if (target && target.health > 0) {
+                target.health -= amount;
+                // Efecto visual simple: cambiar color brevemente o parpadear (opcional)
+                // Por ahora, solo reducimos la salud. La comprobación de "muerte" está en afterUpdate.
+            }
+        }
+
+        function createGameObject(x, y, assetConfig, options = {}) {
+            let body;
+            const renderOptions = {};
+
+            if (assetConfig.type === 'image' && assetConfig.value) {
+                renderOptions.sprite = { 
+                    texture: assetConfig.value,
+                    xScale: (options.width || assetConfig.radius * 2) / (options.originalWidth || 50), // Necesitas el tamaño original de tu imagen
+                    yScale: (options.height || assetConfig.radius * 2) / (options.originalHeight || 50)
+                };
+            } else {
+                renderOptions.fillStyle = assetConfig.value || '#cccccc';
+            }
+
+            if (options.isStatic) {
+                options.isStatic = true;
+            }
+            
+            const bodyOptions = { 
+                render: renderOptions, 
+                density: assetConfig.density || 0.001, // Densidad por defecto
+                friction: assetConfig.friction || 0.7,
+                restitution: assetConfig.restitution || 0.1, // Cuánto rebota
+                ...options 
+            };
+
+
+            if (assetConfig.radius) { // Es un círculo (pájaro, cerdo)
+                body = Bodies.circle(x, y, assetConfig.radius, bodyOptions);
+            } else { // Es un rectángulo (caja)
+                body = Bodies.rectangle(x, y, assetConfig.width, assetConfig.height, bodyOptions);
+            }
+            return body;
+        }
+
+        function setupLevel() {
+            // Limpiar mundo anterior si existe
+            if (world && Composite.allBodies(world).length > 0) {
+                 World.clear(world, false); // false para no limpiar el engine
+                 targets = []; // Limpiar array de objetivos
+            }
+
+            // Ground
+            ground = Bodies.rectangle(canvasWidth / 2, canvasHeight - 25, canvasWidth, 50, {
+                isStatic: true,
+                render: { fillStyle: ART_ASSETS.ground.color }
+            });
+            World.add(world, ground);
+
+            // Slingshot position
+            const slingshotX = 150;
+            const slingshotY = canvasHeight - 200;
+
+            // Crear el primer pájaro
+            loadBird(slingshotX, slingshotY);
+            
+            // Crear la resortera (visual, no funcional como constraint aún)
+            const slingPart1 = Bodies.rectangle(slingshotX - 10, slingshotY + 20, 10, 60, { 
+                isStatic: true, 
+                render: { fillStyle: ART_ASSETS.slingshot.color }
+            });
+            const slingPart2 = Bodies.rectangle(slingshotX + 10, slingshotY + 20, 10, 60, { 
+                isStatic: true, 
+                render: { fillStyle: ART_ASSETS.slingshot.color }
+            });
+            World.add(world, [slingPart1, slingPart2]);
+
+
+            // --- ESTRUCTURA DE EJEMPLO ---
+            // Base
+            let box1 = createGameObject(canvasWidth - 200, canvasHeight - 50 - ART_ASSETS.box.height/2, ART_ASSETS.box, { health: ART_ASSETS.box.health });
+            targets.push({ body: box1, type: 'box', health: ART_ASSETS.box.health });
+            
+            let box2 = createGameObject(canvasWidth - 130, canvasHeight - 50 - ART_ASSETS.box.height/2, ART_ASSETS.box, { health: ART_ASSETS.box.health });
+            targets.push({ body: box2, type: 'box', health: ART_ASSETS.box.health });
+
+            // Primer nivel
+            let pig1 = createGameObject(canvasWidth - 165, canvasHeight - 50 - ART_ASSETS.box.height - ART_ASSETS.pig.radius, ART_ASSETS.pig, { health: ART_ASSETS.pig.health });
+            targets.push({ body: pig1, type: 'pig', health: ART_ASSETS.pig.health });
+            
+            let box3 = createGameObject(canvasWidth - 200, canvasHeight - 50 - ART_ASSETS.box.height * 1.5 - ART_ASSETS.box.height/2, ART_ASSETS.box, { health: ART_ASSETS.box.health });
+            targets.push({ body: box3, type: 'box', health: ART_ASSETS.box.health });
+            
+            let box4 = createGameObject(canvasWidth - 130, canvasHeight - 50 - ART_ASSETS.box.height * 1.5 - ART_ASSETS.box.height/2, ART_ASSETS.box, { health: ART_ASSETS.box.health });
+            targets.push({ body: box4, type: 'box', health: ART_ASSETS.box.health });
+
+            // Techo
+             let box5 = createGameObject(canvasWidth - 165, canvasHeight - 50 - ART_ASSETS.box.height * 2.5 - ART_ASSETS.box.height/2, ART_ASSETS.box, { health: ART_ASSETS.box.health, width: ART_ASSETS.box.width * 2.5}); // Caja más ancha
+            targets.push({ body: box5, type: 'box', health: ART_ASSETS.box.health });
+            
+            // Cerdo arriba
+            let pig2 = createGameObject(canvasWidth - 165, canvasHeight - 50 - ART_ASSETS.box.height * 3 - ART_ASSETS.pig.radius, ART_ASSETS.pig, { health: ART_ASSETS.pig.health });
+            targets.push({ body: pig2, type: 'pig', health: ART_ASSETS.pig.health });
+
+
+            World.add(world, targets.map(t => t.body)); // Añadir todos los cuerpos de los objetivos al mundo
+            
+            isBirdLaunched = false;
+            nextBirdButton.disabled = true;
+            messageDisplay.style.display = 'none';
+        }
+        
+        function loadBird(x, y) {
+            if (bird) { // Remover pájaro anterior si existe
+                World.remove(world, bird);
+            }
+            bird = createGameObject(x, y, ART_ASSETS.bird);
+            World.add(world, bird);
+
+            // Crear la restricción de la resortera
+            // El punto de anclaje de la resortera
+            const slingshotAnchor = { x: x, y: y }; 
+            slingshotConstraint = Constraint.create({
+                pointA: slingshotAnchor,
+                bodyB: bird,
+                stiffness: 0.03, // Más bajo para que sea más elástico
+                length: 5, // Longitud inicial muy corta para que esté "tenso"
+                render: {
+                    strokeStyle: ART_ASSETS.slingshot.color,
+                    lineWidth: 3
+                }
+            });
+            World.add(world, slingshotConstraint);
+            isBirdLaunched = false;
+        }
+
+        function loadNextBird() {
+            if (birdsRemaining > 0 && bird) { // Solo si hay pájaros y el actual ya fue lanzado o se detuvo
+                World.remove(world, bird); // Quitar el pájaro actual
+                bird = null; // Limpiar referencia
+                
+                birdsRemaining--;
+                currentBirdIndex++;
+                
+                const slingshotX = 150;
+                const slingshotY = canvasHeight - 200;
+                loadBird(slingshotX, slingshotY);
+                
+                isBirdLaunched = false;
+                nextBirdButton.disabled = true; // Deshabilitar hasta que se lance el nuevo
+                updateNextBirdButton();
+            }
+             if (birdsRemaining <= 0) {
+                nextBirdButton.disabled = true; // No más pájaros
+                checkWinCondition(true); // Forzar chequeo si no quedan pájaros
+            }
+        }
+
+        function updateScore(points = 0) {
+            score += points;
+            scoreDisplay.textContent = `Puntuación: ${score}`;
+        }
+        
+        function updateNextBirdButton() {
+            nextBirdButton.textContent = `Siguiente Pájaro (${birdsRemaining})`;
+            nextBirdButton.disabled = isBirdLaunched ? false : true;
+             if (birdsRemaining <= 0) {
+                nextBirdButton.disabled = true;
+            }
+        }
+
+        function checkWinCondition(forceDefeatCheck = false) {
+            const remainingPigs = targets.filter(t => t.type === 'pig' && t.health > 0).length;
+
+            if (remainingPigs === 0) {
+                messageDisplay.textContent = `¡Has Ganado! Puntuación: ${score}`;
+                messageDisplay.style.display = 'block';
+                // Deshabilitar más acciones o pájaros
+                if(bird) World.remove(world, bird);
+                if(slingshotConstraint) World.remove(world, slingshotConstraint);
+                nextBirdButton.disabled = true;
+                // Detener el runner para pausar la simulación
+                Runner.stop(runner);
+
+            } else if (birdsRemaining <= 0 && forceDefeatCheck) {
+                 // Comprobar si el pájaro actual (si existe) está prácticamente inmóvil
+                let birdIsStatic = true;
+                if (bird && bird.speed > 0.5) { // Si el pájaro aún se mueve significativamente
+                    birdIsStatic = false;
+                }
+
+                if (birdIsStatic) { // Si no quedan pájaros Y el último pájaro está quieto Y aún hay cerdos
+                    messageDisplay.textContent = `¡Fin del Juego! Puntuación: ${score}`;
+                    messageDisplay.style.display = 'block';
+                    Runner.stop(runner);
+                }
+            }
+        }
+
+        function resetGame() {
+            // Detener el runner actual si está corriendo
+            if (runner && runner.enabled) {
+                 Runner.stop(runner);
+            }
+            if (render) {
+                Render.stop(render);
+            }
+            // Limpiar el mundo y el motor completamente
+            if (world) World.clear(world, false); // false para no limpiar el engine
+            if (engine) Engine.clear(engine);
+
+
+            // Reinicializar variables de estado del juego
+            score = 0;
+            birdsRemaining = 3;
+            currentBirdIndex = 0;
+            targets = [];
+            bird = null;
+            slingshotConstraint = null;
+            
+            updateScoreDisplay();
+            updateNextBirdButton();
+            messageDisplay.style.display = 'none';
+
+            // Re-inicializar el juego
+            init(); // Esto creará un nuevo engine, world, runner, etc.
+        }
+
+
+        // --- Start Game ---
+        window.onload = () => {
+            init();
+        };
+
     </script>
 </body>
 </html>
