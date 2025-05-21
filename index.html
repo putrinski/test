@@ -1,232 +1,430 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-	<title>Randdit</title>
-	<style>
-    h1 {
-  color: #ff4500;
-  font-family: " Volkswagen Serial Bold font", sans-serif;
-}
-<img id="small-image" src="https://i.imgur.com/AAA7FSH.png" alt="Imagen pequeña">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Matemáticas Multimodo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e0f2fe; /* Lighter blue background */
+            margin: 0;
+            padding: 16px;
+            overflow-x: hidden;
+        }
+        .game-container {
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 500px; /* Wider for more options */
+        }
+        .screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .title {
+            font-size: 2rem; /* Larger title */
+            font-weight: 700;
+            color: #0c4a6e; /* Darker cyan-blue */
+            margin-bottom: 24px;
+        }
+        .subtitle {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #0e7490; /* Cyan-blue */
+            margin-bottom: 20px;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .mode-button, .difficulty-button, .option-button, .control-button {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .mode-button { background-color: #0ea5e9; } /* Sky blue */
+        .mode-button:hover { background-color: #0284c7; }
+        .difficulty-button { background-color: #14b8a6; } /* Teal */
+        .difficulty-button:hover { background-color: #0d9488; }
+        .option-button { background-color: #3b82f6; font-size: 1.4rem; padding: 16px; } /* Blue */
+        .option-button:hover { background-color: #2563eb; }
+        .option-button:active { transform: scale(0.95); }
+        .option-button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        .control-button { background-color: #f97316; } /* Orange */
+        .control-button:hover { background-color: #ea580c; }
 
-		body {
-			background-color: #030303;
-			color: white;
-			font-family: sans-serif;
-		}
+        .problem {
+            font-size: 2.8rem; /* Even larger for emphasis */
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 24px;
+            min-height: 50px; /* Ensure space */
+        }
+        .options-grid-game { /* Renamed to avoid conflict */
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+        .score, .lives, .feedback {
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+        .score { color: #166534; }
+        .lives { color: #b91c1c; }
+        .feedback { min-height: 30px; margin-bottom: 16px; width: 100%; }
+        .feedback.correct { color: #16a34a; }
+        .feedback.incorrect { color: #dc2626; }
+        .game-over-message {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #c2410c;
+            margin-bottom: 20px;
+        }
+        .hidden { display: none !important; } /* Important to override other display styles */
 
-	h1 {
-		text-align: center;
-	}
-
-	button {
-		background-color: #ff4500;
-		color: #000000;
-		padding: 10px 20px;
-		border: none;
-		border-radius: 5px;
-		font-size: 16px;
-		margin: 10px;
-		cursor: pointer;
-	}
-
-	.red-button {
-		background-color: #ff0000;
-		color: white;
-	}
-    
-    #image-text {
-	position: absolute;
-	top: 10;
-	left: 0;
-	padding: 100px;
-	font-size: 24px;
-	background-color: rgba(0, 0, 0, 0.7);
-	color: white;
-}
-
-	img {
-		display: block;
-		margin: auto;
-		max-width: 70%;
-		height: 450px;
-		padding: 20px;
-	}
-
-	#image-container {
-		position: relative;
-	}
-
-#image-container-inner {
-	height: 200px; /* ajuste la altura según sus necesidades */
-	max-width: 300%; /* ajuste el ancho máximo según sus necesidades */
-	margin: 0 auto;
-	position: relative;
-}
-
-	</style>
-<script>
-	let subreddit = "cats";
-	let nsfwEnabled = false;
-  let postLink = "";
-
-
-	function getRandomImage() {
-  subreddit = document.getElementById("subreddit-input").value.trim();
-
-  let url = `https://www.reddit.com/r/${subreddit}/.json?limit=100`;
-
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      let posts = data.data.children.filter(post => post.data.post_hint === "image");
-
-      if (!nsfwEnabled) {
-        posts = posts.filter(post => !post.data.over_18);
-      }
-
-      if (posts.length === 0) {
-        alert("No images found. Try again with a different subreddit.");
-      } else {
-        let randomPost = posts[Math.floor(Math.random() * posts.length)];
-        let imageUrl = randomPost.data.url;
-        postLink = `https://www.reddit.com${randomPost.data.permalink}`;
-
-        let image = document.getElementById("random-image");
-        image.src = imageUrl;
-        let postText = randomPost.data.title;
-
-        let postElement = document.getElementById("post-text");
-        postElement.innerHTML = postText;
-      }
-    })
-    .catch(error => console.log(error));
-}
-
-function getRandomVideo() {
-	subreddit = document.getElementById("subreddit-input").value.trim();
-
-	let url = `https://www.reddit.com/r/${subreddit}/.json?limit=100`;
-
-	fetch(url)
-		.then(response => response.json())
-		.then(data => {
-			let posts = data.data.children.filter(post => post.data.post_hint === "hosted:video");
-
-			if (!nsfwEnabled) {
-				posts = posts.filter(post => !post.data.over_18);
-			}
-
-			if (posts.length === 0) {
-				alert("No videos found. Try again with a different subreddit.");
-			} else {
-				let randomPost = posts[Math.floor(Math.random() * posts.length)];
-				let videoUrl = randomPost.data.media.reddit_video.fallback_url;
-
-				let video = document.createElement("video");
-				video.controls = true;
-				video.src = videoUrl;
-
-				let imageContainer = document.getElementById("image-container");
-				imageContainer.innerHTML = "";
-				imageContainer.appendChild(video);
-			}
-		})
-		.catch(error => console.log(error));
-}
-
-	function toggleNsfw() {
-		nsfwEnabled = !nsfwEnabled;
-
-
-		let toggleButton = document.getElementById("toggle-nsfw");
-		if (nsfwEnabled) {
-			toggleButton.classList.add("red-button");
-			toggleButton.innerHTML = "NSFW ON";
-		} else {
-			toggleButton.classList.remove("red-button");
-			toggleButton.innerHTML = "NSFW OFF";
-		}
-
-		getRandomImage();
-	}
-</script>
+        /* Mobile specific adjustments */
+        @media (max-width: 480px) {
+            .title { font-size: 1.6rem; }
+            .subtitle { font-size: 1.3rem; }
+            .problem { font-size: 2.2rem; }
+            .mode-button, .difficulty-button, .option-button, .control-button { font-size: 1rem; padding: 10px 15px; }
+            .option-button { font-size: 1.2rem; padding: 14px; }
+            .score, .lives, .feedback { font-size: 1.1rem; }
+            .game-container { padding: 16px; }
+        }
+    </style>
 </head>
 <body>
-	<h1>Randdit</h1>
-  
- 
+    <div class="game-container">
 
-<div id="image-container">
-	<img id="random-image">
-  <p id="post-text"></p>
-</div>
+        <div id="mode-selection-screen" class="screen">
+            <h1 class="title">¡Juego de Matemáticas!</h1>
+            <h2 class="subtitle">Elige un modo de juego:</h2>
+            <div class="button-grid">
+                <button class="mode-button" data-mode="sum">Sumas</button>
+                <button class="mode-button" data-mode="subtract">Restas</button>
+                <button class="mode-button" data-mode="multiply">Multiplicación</button>
+            </div>
+        </div>
 
-<div id="buttons-container">
-	<input id="subreddit-input" type="text" placeholder="Enter subreddit">
-	<button id="get-random-image" onclick="getRandomImage()">Get Random Image</button>
-  <button id="get-random-video" onclick="getRandomVideo()">Get Random Video</button>
-	<button id="toggle-nsfw" onclick="toggleNsfw()">NSFW OFF</button>
-</div>
+        <div id="difficulty-selection-screen" class="screen hidden">
+            <h1 class="title" id="difficulty-title">Selecciona la Dificultad</h1>
+            <div class="button-grid">
+                <button class="difficulty-button" data-difficulty="easy">Fácil (1 dígito)</button>
+                <button class="difficulty-button" data-difficulty="normal">Normal (hasta 2 dígitos)</button>
+                <button class="difficulty-button" data-difficulty="hard">Difícil (hasta 4 dígitos)</button>
+            </div>
+            <button id="back-to-mode" class="control-button" style="margin-top: 20px;">Volver a Modos</button>
+        </div>
 
-<script>
-	getRandomImage();
+        <div id="game-screen" class="screen hidden">
+            <h1 class="title" id="game-mode-title"></h1>
+            <div class="stats-container">
+                <div id="score" class="score">Puntuación: 0</div>
+                <div id="lives" class="lives">Vidas: 3</div>
+            </div>
+            <div id="problem" class="problem"></div>
+            <div id="options" class="options-grid-game">
+                </div>
+            <div id="feedback" class="feedback"></div>
+            <button id="back-to-difficulty" class="control-button hidden" style="margin-top: 10px;">Cambiar Dificultad</button>
+            <button id="back-to-main-menu" class="control-button" style="margin-top: 10px;">Menú Principal</button>
+        </div>
 
-  function toggleFullScreen() {
-    let img = document.getElementById("random-image");
-    if (!document.fullscreenElement) {
-      img.requestFullscreen();
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen(); 
-      }
-    }
-  }
+        <div id="game-over-screen" class="screen hidden">
+            <div id="game-over-message" class="game-over-message">¡Juego Terminado!</div>
+            <div id="final-score" class="score" style="margin-bottom: 20px;"></div>
+            <button id="restart-button" class="difficulty-button" style="background-color: #10b981;">Jugar de Nuevo (Misma Config.)</button>
+            <button id="main-menu-from-game-over" class="control-button" style="margin-top: 10px;">Menú Principal</button>
+        </div>
+    </div>
 
-  let img = document.getElementById("random-image");
-  img.addEventListener("click", toggleFullScreen);
+    <script>
+        // Elementos del DOM
+        const modeSelectionScreen = document.getElementById('mode-selection-screen');
+        const difficultySelectionScreen = document.getElementById('difficulty-selection-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
 
-  let closeButton = document.createElement("button");
-  closeButton.innerHTML = "X";
-  closeButton.style.position = "absolute";
-  closeButton.style.top = "10px";
-  closeButton.style.right = "10px";
-  closeButton.style.backgroundColor = "white";
-  closeButton.style.color = "black";
-  closeButton.style.border = "none";
-  closeButton.style.borderRadius = "50%";
-  closeButton.style.padding = "5px 10px";
-  closeButton.style.cursor = "pointer";
-  closeButton.style.display = "none";
-  
-  let fullScreenContainer = document.createElement("div");
-  fullScreenContainer.style.display = "none";
-  fullScreenContainer.style.position = "fixed";
-  fullScreenContainer.style.top = "0";
-  fullScreenContainer.style.left = "0";
-  fullScreenContainer.style.width = "100%";
-  fullScreenContainer.style.height = "100%";
-  fullScreenContainer.style.backgroundColor = "black";
-  fullScreenContainer.style.zIndex = "9999";
-  fullScreenContainer.appendChild(closeButton);
+        const difficultyTitle = document.getElementById('difficulty-title');
+        const gameModeTitle = document.getElementById('game-mode-title');
+        
+        const problemElement = document.getElementById('problem');
+        const optionsElement = document.getElementById('options');
+        const scoreElement = document.getElementById('score');
+        const livesElement = document.getElementById('lives');
+        const feedbackElement = document.getElementById('feedback');
+        
+        const gameOverMessageElement = document.getElementById('game-over-message');
+        const finalScoreElement = document.getElementById('final-score');
 
-  closeButton.addEventListener("click", function() {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    }
-  });
+        // Botones
+        const modeButtons = document.querySelectorAll('.mode-button');
+        const difficultyButtons = document.querySelectorAll('.difficulty-button');
+        const restartButton = document.getElementById('restart-button');
+        const backToModeButton = document.getElementById('back-to-mode');
+        const backToDifficultyButton = document.getElementById('back-to-difficulty');
+        const backToMainMenuButton = document.getElementById('back-to-main-menu');
+        const mainMenuFromGameOverButton = document.getElementById('main-menu-from-game-over');
 
-  document.addEventListener("fullscreenchange", function() {
-    if (document.fullscreenElement) {
-      fullScreenContainer.style.display = "block";
-      closeButton.style.display = "block";
-    } else {
-      fullScreenContainer.style.display = "none";
-      closeButton.style.display = "none";
-    }
-  });
 
-  document.body.appendChild(fullScreenContainer);
-</script>
+        let currentScore = 0;
+        let currentLives = 3;
+        const MAX_LIVES = 3;
+        let correctAnswer;
+        let problemTimeout;
+
+        let currentGameMode = ''; // 'sum', 'subtract', 'multiply'
+        let currentDifficulty = ''; // 'easy', 'normal', 'hard' (solo para sum/subtract)
+
+        // --- Navegación entre pantallas ---
+        function showScreen(screenElement) {
+            [modeSelectionScreen, difficultySelectionScreen, gameScreen, gameOverScreen].forEach(s => s.classList.add('hidden'));
+            screenElement.classList.remove('hidden');
+        }
+
+        modeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                currentGameMode = button.dataset.mode;
+                if (currentGameMode === 'sum' || currentGameMode === 'subtract') {
+                    difficultyTitle.textContent = `Dificultad para ${currentGameMode === 'sum' ? 'Sumas' : 'Restas'}`;
+                    showScreen(difficultySelectionScreen);
+                } else if (currentGameMode === 'multiply') {
+                    currentDifficulty = 'easy'; // Multiplicación no tiene dificultad variable aquí
+                    startGame();
+                }
+            });
+        });
+
+        difficultyButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                currentDifficulty = button.dataset.difficulty;
+                startGame();
+            });
+        });
+
+        backToModeButton.addEventListener('click', () => showScreen(modeSelectionScreen));
+        
+        backToDifficultyButton.addEventListener('click', () => {
+            if (currentGameMode === 'sum' || currentGameMode === 'subtract') {
+                 showScreen(difficultySelectionScreen);
+            } else { // Para multiplicación, va directo a modos
+                 showScreen(modeSelectionScreen);
+            }
+        });
+        
+        backToMainMenuButton.addEventListener('click', () => showScreen(modeSelectionScreen));
+        mainMenuFromGameOverButton.addEventListener('click', () => showScreen(modeSelectionScreen));
+        restartButton.addEventListener('click', startGame); // Reinicia con la misma config
+
+        // --- Lógica del Juego ---
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function startGame() {
+            currentScore = 0;
+            currentLives = MAX_LIVES;
+            updateScoreDisplay();
+            updateLivesDisplay();
+            feedbackElement.textContent = '';
+            feedbackElement.className = 'feedback';
+            
+            let modeText = "";
+            if (currentGameMode === 'sum') modeText = "Sumas";
+            else if (currentGameMode === 'subtract') modeText = "Restas";
+            else if (currentGameMode === 'multiply') modeText = "Multiplicación";
+
+            if (currentDifficulty && (currentGameMode === 'sum' || currentGameMode === 'subtract')) {
+                 let diffText = "";
+                 if(currentDifficulty === 'easy') diffText = "Fácil";
+                 else if(currentDifficulty === 'normal') diffText = "Normal";
+                 else if(currentDifficulty === 'hard') diffText = "Difícil";
+                 gameModeTitle.textContent = `${modeText} - ${diffText}`;
+                 backToDifficultyButton.classList.remove('hidden'); // Mostrar botón para cambiar dificultad
+            } else {
+                 gameModeTitle.textContent = modeText;
+                 backToDifficultyButton.classList.add('hidden'); // Ocultar si no aplica (multiplicación)
+            }
+            
+            showScreen(gameScreen);
+            enableOptionButtons(true);
+            generateProblem();
+        }
+
+        function updateScoreDisplay() {
+            scoreElement.textContent = `Puntuación: ${currentScore}`;
+        }
+
+        function updateLivesDisplay() {
+            livesElement.textContent = `Vidas: ${currentLives}`;
+        }
+        
+        function enableOptionButtons(enable) {
+            const buttons = optionsElement.querySelectorAll('.option-button');
+            buttons.forEach(button => button.disabled = !enable);
+        }
+
+        function generateProblem() {
+            clearTimeout(problemTimeout);
+            let num1, num2, problemText;
+
+            if (currentGameMode === 'sum') {
+                if (currentDifficulty === 'easy') { num1 = getRandomInt(0, 9); num2 = getRandomInt(0, 9); }
+                else if (currentDifficulty === 'normal') { num1 = getRandomInt(0, 99); num2 = getRandomInt(0, 99); }
+                else { num1 = getRandomInt(0, 9999); num2 = getRandomInt(0, 9999); } // hard
+                correctAnswer = num1 + num2;
+                problemText = `${num1} + ${num2} = ?`;
+            } else if (currentGameMode === 'subtract') {
+                if (currentDifficulty === 'easy') { num2 = getRandomInt(0, 9); num1 = getRandomInt(num2, 9); } // num1 >= num2
+                else if (currentDifficulty === 'normal') { num2 = getRandomInt(0, 99); num1 = getRandomInt(num2, 99); }
+                else { num2 = getRandomInt(0, 9999); num1 = getRandomInt(num2, 9999); } // hard
+                correctAnswer = num1 - num2;
+                problemText = `${num1} - ${num2} = ?`;
+            } else if (currentGameMode === 'multiply') {
+                num1 = getRandomInt(1, 10);
+                num2 = getRandomInt(1, 10);
+                correctAnswer = num1 * num2;
+                problemText = `${num1} × ${num2} = ?`;
+            }
+
+            problemElement.textContent = problemText;
+
+            const options = [correctAnswer];
+            let attempts = 0; // Para evitar bucles infinitos si es difícil generar opciones únicas
+            while (options.length < 4 && attempts < 20) {
+                let wrongAnswer;
+                const offsetRange = Math.max(1, Math.floor(Math.abs(correctAnswer * 0.2) + 1)); // Rango de desviación
+                const offset = getRandomInt(1, offsetRange + 5); // Aumentar un poco el rango para más variedad
+                wrongAnswer = correctAnswer + (Math.random() < 0.5 ? -offset : offset);
+                
+                if (currentGameMode === 'subtract' || currentGameMode === 'sum') {
+                     wrongAnswer = Math.max(0, wrongAnswer); // Evitar negativos en sumas/restas si no se desea
+                } else if (currentGameMode === 'multiply') {
+                    // Para multiplicación, las opciones incorrectas pueden ser más variadas
+                    let altNum1 = num1 + getRandomInt(-2,2);
+                    let altNum2 = num2 + getRandomInt(-2,2);
+                    altNum1 = Math.max(1, altNum1); // Mantener en rango de tabla
+                    altNum2 = Math.max(1, altNum2);
+                    if (Math.random() < 0.5) { // Generar opciones basadas en números cercanos
+                        wrongAnswer = altNum1 * num2;
+                    } else {
+                        wrongAnswer = num1 * altNum2;
+                    }
+                     if (wrongAnswer === correctAnswer && options.length < 3) { // Si coincide, intentar otra variación
+                        wrongAnswer = (num1 + (Math.random() < 0.5 ? 1 : -1)) * (num2 + (Math.random() < 0.5 ? 1 : -1));
+                        wrongAnswer = Math.max(0, wrongAnswer);
+                    }
+                }
+
+
+                if (!options.includes(wrongAnswer)) {
+                    options.push(wrongAnswer);
+                }
+                attempts++;
+            }
+            // Si después de los intentos no tenemos 4 opciones, rellenar con números secuenciales o aleatorios simples
+             while (options.length < 4) {
+                let filler = correctAnswer + options.length -1; // Simple filler
+                if (options.includes(filler) || filler < 0) filler = Math.max(0, correctAnswer - (options.length -1));
+                if (options.includes(filler) || filler < 0) filler = getRandomInt(Math.max(0, correctAnswer-10), correctAnswer+10);
+                if (!options.includes(filler)) options.push(filler);
+                else options.push(getRandomInt(0,100)); // Fallback muy genérico
+            }
+
+
+            shuffleArray(options);
+
+            optionsElement.innerHTML = '';
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('option-button');
+                button.addEventListener('click', () => checkAnswer(option));
+                optionsElement.appendChild(button);
+            });
+
+            feedbackElement.textContent = '';
+            feedbackElement.className = 'feedback';
+            enableOptionButtons(true);
+        }
+
+        function checkAnswer(selectedOption) {
+            if (currentLives <= 0) return;
+
+            enableOptionButtons(false);
+
+            if (selectedOption === correctAnswer) {
+                currentScore++;
+                feedbackElement.textContent = '¡Correcto!';
+                feedbackElement.className = 'feedback correct';
+                if (navigator.vibrate) navigator.vibrate(100);
+            } else {
+                currentLives--;
+                feedbackElement.textContent = `Incorrecto. La respuesta era ${correctAnswer}.`;
+                feedbackElement.className = 'feedback incorrect';
+                if (navigator.vibrate) navigator.vibrate([150, 50, 150]);
+                updateLivesDisplay();
+            }
+            updateScoreDisplay();
+
+            if (currentLives <= 0) {
+                gameOver();
+            } else {
+                problemTimeout = setTimeout(generateProblem, 1800); // Un poco más de tiempo para leer el feedback
+            }
+        }
+
+        function gameOver() {
+            clearTimeout(problemTimeout);
+            showScreen(gameOverScreen);
+            finalScoreElement.textContent = `Puntuación Final: ${currentScore}`;
+            gameOverMessageElement.textContent = currentScore > 7 ? "¡Excelente Trabajo!" : (currentScore > 3 ? "¡Muy Bien!" : "¡Juego Terminado!");
+            enableOptionButtons(false);
+        }
+
+        // Iniciar en la pantalla de selección de modo
+        window.onload = () => {
+            showScreen(modeSelectionScreen);
+        };
+    </script>
 </body>
 </html>
