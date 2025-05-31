@@ -3,390 +3,1146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flappy Bird Personalizable</title>
+    <title>Guía de Regalos Stardew Valley - Completa</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Press Start 2P', cursive;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #87CEEB; /* Color de fondo del cielo por defecto */
-            margin: 0;
-            overflow: hidden; /* Evita barras de desplazamiento */
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff; /* AliceBlue, un fondo más claro y suave */
         }
-        .game-container {
-            background-color: #fff; /* Fondo del contenedor del juego */
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-        canvas {
-            border: 2px solid #000;
-            display: block;
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1400px; 
             margin: 0 auto;
-            background-color: #70c5ce; /* Color de fondo del canvas por defecto */
-            /* Para usar una imagen de fondo en el canvas, descomenta lo siguiente y ajusta la URL: */
-            /* background-image: url('path/to/your/background-image.png'); */
-            /* background-size: cover; */
-            border-radius: 8px;
         }
-        #score {
-            font-size: 24px;
-            margin-top: 10px;
-            color: #333;
-        }
-        .controls {
-            margin-top: 15px;
-        }
-        button {
-            font-family: 'Press Start 2P', cursive;
-            background-color: #4CAF50; /* Color verde */
-            border: none;
-            color: white;
-            padding: 10px 20px;
+        .character-card {
+            background-color: white;
+            border-radius: 10px; 
+            padding: 1rem;
             text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
             cursor: pointer;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            transition: background-color 0.3s, transform 0.1s;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
         }
-        button:hover {
-            background-color: #45a049;
+        .character-card:hover {
+            transform: translateY(-6px) scale(1.03); 
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
         }
-        button:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        .character-card img {
+            width: 72px; 
+            height: 72px;
+            object-fit: contain;
+            margin-bottom: 0.75rem;
+            border-radius: 50%; 
+            border: 2px solid #e2e8f0; 
         }
-        #messageOverlay {
+        .character-card p {
+            font-weight: 600; 
+            color: #2d3748; 
+            font-size: 0.9em;
+        }
+
+        /* Estilos del Modal */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.65); 
+            align-items: center;
+            justify-content: center;
+            padding: 1rem; 
+        }
+        .modal-content {
+            background-color: #ffffff;
+            margin: auto;
+            padding: 20px 25px 30px; 
+            border-radius: 12px;
+            width: 95%;
+            max-width: 650px; 
+            position: relative;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            animation: fadeInModal 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .close-button {
+            color: #888;
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 20px;
-            text-align: center;
-            z-index: 100; /* Asegura que esté sobre el canvas */
+            top: 12px;
+            right: 18px;
+            font-size: 32px;
+            font-weight: normal; 
+            line-height: 1;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-character-portrait {
+            width: 88px; 
+            height: 88px;
+            object-fit: contain;
+            float: left;
+            margin-right: 20px;
+            margin-bottom: 5px; 
+            border: 3px solid #f0f0f0;
+            border-radius: 8px; 
+        }
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            overflow: hidden; 
+        }
+        .modal-header h2 {
+            font-size: 2em; 
+            color: #1a202c; 
+            margin-top: 5px; 
+            font-weight: 700;
+        }
+        .gift-section h3 { /* Título principal de la sección (Favoritos / Gustan) */
+            font-size: 1.4em; 
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom-width: 2px;
+            padding-bottom: 6px;
+            font-weight: 600;
+        }
+        .gift-section.loved h3 {
+            color: #c53030; /* Rojo más oscuro para Favoritos */
+            border-bottom-color: #c53030;
+        }
+        .gift-section.liked h3 {
+            color: #2f855a; /* Verde más oscuro para Gustan */
+            border-bottom-color: #2f855a;
+        }
+         .gift-section h4 { /* Subtítulos (Específicos / Universales) */
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #4a5568; /* Gris oscuro */
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        .gift-section ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        @media (min-width: 520px) { 
+            .gift-section ul {
+                columns: 2;
+                column-gap: 25px;
+            }
+        }
+        .gift-section ul li {
+            display: flex;
+            align-items: center;
+            padding: 5px 0; 
+            color: #4a5568; 
+            font-size: 0.98em;
+            border-bottom: 1px dashed #edf2f7; 
+        }
+        .gift-section ul li:last-child {
+            border-bottom: none;
+        }
+        .gift-item-png {
+            width: 28px; 
+            height: 28px;
+            object-fit: contain;
+            vertical-align: middle;
+            margin-right: 10px; 
+            flex-shrink: 0; 
+        }
+        .gift-item-name {
+            flex-grow: 1;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1 class="text-3xl mb-4">Skale Bird</h1>
-        <canvas id="gameCanvas" width="320" height="480"></canvas>
-        <div id="score" class="text-2xl mt-2">Puntuación: 0</div>
-        <div class="controls">
-            <button id="startButton">Iniciar Juego</button>
-            <button id="restartButton" style="display:none;">Reiniciar</button>
+    <header class="bg-green-600 p-5 shadow-lg"> 
+        <h1 class="text-4xl font-bold text-white text-center tracking-tight">Guía de Regalos Stardew Valley</h1>
+    </header>
+
+    <div id="characterGrid" class="character-grid mt-8 mb-8">
         </div>
-        <div id="messageOverlay" style="display:none;"></div>
+
+    <div id="giftModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModalButton" title="Cerrar">&times;</span>
+            <div class="modal-header">
+                <img id="modalCharacterPortrait" src="" alt="Retrato del Personaje" class="modal-character-portrait">
+                <h2 id="modalCharacterName"></h2>
+            </div>
+            <div class="gift-section loved">
+                <h3><span class="text-yellow-400 text-xl mr-1">⭐</span>Regalos Favoritos</h3>
+                
+                <h4 id="specificLovesSectionHeader" class="text-md font-semibold mt-3 mb-1 text-gray-700" style="display:none;">Específicos del Personaje:</h4>
+                <ul id="specificLovedGiftsList"></ul>
+                
+                <h4 id="universalLovesSectionHeader" class="text-md font-semibold mt-3 mb-1 text-gray-700" style="display:none;">Universales Favoritos:</h4>
+                <ul id="universalLovedGiftsList"></ul>
+            </div>
+            <div class="gift-section liked mt-5"> 
+                <h3><span class="text-green-400 text-xl mr-1">👍</span>Regalos que le Gustan</h3>
+                <ul id="likedGiftsList"></ul>
+            </div>
+        </div>
     </div>
 
+    <footer class="text-center py-6 bg-gray-100 border-t border-gray-300">
+        <p class="text-sm text-gray-600">Datos de personajes y regalos obtenidos de <a href="https://es.stardewvalleywiki.com/Lista_de_todos_los_regalos" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">Stardew Valley Wiki (ES)</a>.</p>
+        <p class="text-xs text-gray-500 mt-1">Esta es una guía no oficial creada por fans.</p>
+    </footer>
+
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreDisplay = document.getElementById('score');
-        const startButton = document.getElementById('startButton');
-        const restartButton = document.getElementById('restartButton');
-        const messageOverlay = document.getElementById('messageOverlay');
+        // Datos de personajes y regalos de Stardew Valley
+        // Fuentes principales: Stardew Valley Wiki (stardewvalleywiki.com) - Versión en español
+        const stardewCharacters = [
+            {
+                id: "abigail",
+                name: "Abigail",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/8/88/Abigail.png", 
+                lovedGifts: [
+                    { name: "Amatista", png: "https://stardewvalleywiki.com/mediawiki/images/2/2e/Amethyst.png" }, 
+                    { name: "Pudin de plátano", png: "https://stardewvalleywiki.com/mediawiki/images/4/40/Banana_Pudding.png" }, 
+                    { name: "Tarta de zarzamora", png: "https://stardewvalleywiki.com/mediawiki/images/7/70/Blackberry_Cobbler.png" }, 
+                    { name: "Pastel de chocolate", png: "https://stardewvalleywiki.com/mediawiki/images/8/87/Chocolate_Cake.png" }, 
+                    { name: "Pez globo", png: "https://stardewvalleywiki.com/mediawiki/images/b/ba/Pufferfish.png" }, 
+                    { name: "Calabaza", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Pumpkin.png" }, 
+                    { name: "Anguila picante", png: "https://stardewvalleywiki.com/mediawiki/images/f/f2/Spicy_Eel.png" }, 
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [ 
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+                    { name: "Pizza", png: "https://stardewvalleywiki.com/mediawiki/images/f/f4/Pizza.png" },
+                    { name: "Espaguetis", png: "https://stardewvalleywiki.com/mediawiki/images/3/3c/Spaghetti.png"},
+                    { name: "Galleta", png: "https://stardewvalleywiki.com/mediawiki/images/7/73/Cookie.png"},
+                    { name: "Pastel de ruibarbo", png: "https://stardewvalleywiki.com/mediawiki/images/2/2b/Rhubarb_Pie.png"},
+                    { name: "Muffin de semillas de amapola", png: "https://stardewvalleywiki.com/mediawiki/images/8/88/Poppyseed_Muffin.png"},
+                    { name: "Ensalada", png: "https://stardewvalleywiki.com/mediawiki/images/7/7e/Salad.png"},
+                    { name: "Coliflor", png: "https://stardewvalleywiki.com/mediawiki/images/8/84/Cauliflower.png"},
+                    { name: "Queso", png: "https://stardewvalleywiki.com/mediawiki/images/0/0c/Cheese.png"},
+                    { name: "Patata", png: "https://stardewvalleywiki.com/mediawiki/images/c/c2/Potato.png"},
+                ]
+            },
+            {
+                id: "alex",
+                name: "Alex",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/0/04/Alex.png", 
+                lovedGifts: [
+                    { name: "Desayuno completo", png: "https://stardewvalleywiki.com/mediawiki/images/3/3d/Complete_Breakfast.png" },
+                    { name: "Cena de salmón", png: "https://stardewvalleywiki.com/mediawiki/images/3/38/Salmon_Dinner.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [ 
+                    { name: "Huevo (todos excepto Huevo nulo)", png: "https://stardewvalleywiki.com/mediawiki/images/5/5d/Egg.png"},
+                    { name: "Café", png: "https://stardewvalleywiki.com/mediawiki/images/e/e9/Coffee.png" },
+                    { name: "Tarta de manzana", png: "https://stardewvalleywiki.com/mediawiki/images/a/a9/Apple_Pie.png"},
+                    { name: "Batata confitada", png: "https://stardewvalleywiki.com/mediawiki/images/0/01/Glazed_Yams.png"},
+                    { name: "Helado", png: "https://stardewvalleywiki.com/mediawiki/images/7/73/Ice_Cream.png"},
+                    { name: "Col rizada", png: "https://stardewvalleywiki.com/mediawiki/images/d/d1/Kale.png"},
+                    { name: "Judía verde", png: "https://stardewvalleywiki.com/mediawiki/images/5/5c/Green_Bean.png"},
+                ]
+            },
+            {
+                id: "elliott",
+                name: "Elliott",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/b/bd/Elliott.png",
+                lovedGifts: [
+                    { name: "Pastel de cangrejo", png: "https://stardewvalleywiki.com/mediawiki/images/3/34/Crab_Cakes.png" },
+                    { name: "Pluma de pato", png: "https://stardewvalleywiki.com/mediawiki/images/f/f8/Duck_Feather.png" },
+                    { name: "Langosta", png: "https://stardewvalleywiki.com/mediawiki/images/9/9f/Lobster.png" },
+                    { name: "Granada", png: "https://stardewvalleywiki.com/mediawiki/images/4/4c/Pomegranate.png" },
+                    { name: "Sopa Tom Kha", png: "https://stardewvalleywiki.com/mediawiki/images/f/f5/Tom_Kha_Soup.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [ 
+                    { name: "Pulpo", png: "https://stardewvalleywiki.com/mediawiki/images/4/47/Octopus.png" },
+                    { name: "Calamar", png: "https://stardewvalleywiki.com/mediawiki/images/1/11/Squid.png" },
+                    { name: "Cerveza", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Beer.png"},
+                    { name: "Brecol", png: "https://stardewvalleywiki.com/mediawiki/images/9/98/Broccoli.png"},
+                    { name: "Pizza", png: "https://stardewvalleywiki.com/mediawiki/images/f/f4/Pizza.png"},
+                    { name: "Todas las frutas (excepto Granada y Mora)", png: "https://stardewvalleywiki.com/mediawiki/images/2/26/Apricot.png"}, 
+                    { name: "Todos los artefactos", png: "https://stardewvalleywiki.com/mediawiki/images/e/e1/Rusty_Spoon.png"}, 
+                ]
+            },
+            {
+                id: "emily",
+                name: "Emily",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/2/28/Emily.png",
+                lovedGifts: [
+                    { name: "Amatista", png: "https://stardewvalleywiki.com/mediawiki/images/2/2e/Amethyst.png" }, 
+                    { name: "Aguamarina", png: "https://stardewvalleywiki.com/mediawiki/images/3/35/Aquamarine.png" },
+                    { name: "Tela", png: "https://stardewvalleywiki.com/mediawiki/images/e/e1/Cloth.png" },
+                    { name: "Esmeralda", png: "https://stardewvalleywiki.com/mediawiki/images/6/6a/Emerald.png" },
+                    { name: "Jade", png: "https://stardewvalleywiki.com/mediawiki/images/7/7e/Jade.png" },
+                    { name: "Rubí", png: "https://stardewvalleywiki.com/mediawiki/images/a/a9/Ruby.png" },
+                    { name: "Hamburguesa de supervivencia", png: "https://stardewvalleywiki.com/mediawiki/images/9/98/Survival_Burger.png" }, 
+                    { name: "Topacio", png: "https://stardewvalleywiki.com/mediawiki/images/a/a5/Topaz.png" },
+                    { name: "Lana", png: "https://stardewvalleywiki.com/mediawiki/images/9/99/Wool.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [ 
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Café", png: "https://stardewvalleywiki.com/mediawiki/images/e/e9/Coffee.png"},
+                    { name: "Diamante", png: "https://stardewvalleywiki.com/mediawiki/images/e/ea/Diamond.png"}, 
+                ]
+            },
+            {
+                id: "haley",
+                name: "Haley",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/1/1b/Haley.png", 
+                lovedGifts: [
+                    { name: "Pastel rosa", png: "https://stardewvalleywiki.com/mediawiki/images/f/f6/Pink_Cake.png" },
+                    { name: "Coco", png: "https://stardewvalleywiki.com/mediawiki/images/2/2f/Coconut.png" },
+                    { name: "Ensalada de frutas", png: "https://stardewvalleywiki.com/mediawiki/images/1/17/Fruit_Salad.png"}, 
+                    { name: "Girasol", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Sunflower.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [ 
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Topacio", png: "https://stardewvalleywiki.com/mediawiki/images/a/a5/Topaz.png"},
+                    { name: "Pastel de chocolate", png: "https://stardewvalleywiki.com/mediawiki/images/8/87/Chocolate_Cake.png" }, 
+                    { name: "Diamante", png: "https://stardewvalleywiki.com/mediawiki/images/e/ea/Diamond.png"},
+                    { name: "Aguamarina", png: "https://stardewvalleywiki.com/mediawiki/images/3/35/Aquamarine.png"},
+                    { name: "Amatista", png: "https://stardewvalleywiki.com/mediawiki/images/2/2e/Amethyst.png" }, 
+                ]
+            },
+            {
+                id: "harvey",
+                name: "Harvey",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/9/95/Harvey.png", 
+                lovedGifts: [
+                    { name: "Café", png: "https://stardewvalleywiki.com/mediawiki/images/e/e9/Coffee.png" },
+                    { name: "Encurtidos", png: "https://stardewvalleywiki.com/mediawiki/images/c/c2/Pickles.png" },
+                    { name: "Supercomida", png: "https://stardewvalleywiki.com/mediawiki/images/d/d1/Super_Meal.png" },
+                    { name: "Aceite de trufa", png: "https://stardewvalleywiki.com/mediawiki/images/3/3d/Truffle_Oil.png" },
+                    { name: "Vino", png: "https://stardewvalleywiki.com/mediawiki/images/6/69/Wine.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [ 
+                    { name: "Rebozuelo", png: "https://stardewvalleywiki.com/mediawiki/images/e/e3/Chanterelle.png" },
+                    { name: "Seta común", png: "https://stardewvalleywiki.com/mediawiki/images/7/74/Common_Mushroom.png" },
+                    { name: "Uva", png: "https://stardewvalleywiki.com/mediawiki/images/6/69/Grape.png" },
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png"},
+                    { name: "Diente de león", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Dandelion.png"},
+                    { name: "Avellana", png: "https://stardewvalleywiki.com/mediawiki/images/c/c8/Hazelnut.png"},
+                    { name: "Puerro", png: "https://stardewvalleywiki.com/mediawiki/images/5/57/Leek.png"},
+                    { name: "Colmenilla", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Morel.png"},
+                    { name: "Seta lila", png: "https://stardewvalleywiki.com/mediawiki/images/4/4b/Purple_Mushroom.png"}, 
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png"},
+                    { name: "Cebolleta", png: "https://stardewvalleywiki.com/mediawiki/images/3/34/Spring_Onion.png"},
+                    { name: "Raíz invernal", png: "https://stardewvalleywiki.com/mediawiki/images/9/92/Winter_Root.png"},
+                    { name: "Brecol", png: "https://stardewvalleywiki.com/mediawiki/images/9/98/Broccoli.png"},
+                    { name: "Pluma de pato", png: "https://stardewvalleywiki.com/mediawiki/images/f/f8/Duck_Feather.png"},
+                    { name: "Leche de cabra", png: "https://stardewvalleywiki.com/mediawiki/images/c/c7/Goat_Milk.png"},
+                    { name: "Leche de cabra grande", png: "https://stardewvalleywiki.com/mediawiki/images/a/ae/Large_Goat_Milk.png"},
+                    { name: "Patata", png: "https://stardewvalleywiki.com/mediawiki/images/c/c2/Potato.png"},
+                    { name: "Rábano rusticano", png: "https://stardewvalleywiki.com/mediawiki/images/9/90/Wild_Horseradish.png"},
+                ]
+            },
+             {
+                id: "leah",
+                name: "Leah",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/e/e6/Leah.png",
+                lovedGifts: [
+                    { name: "Queso de cabra", png: "https://stardewvalleywiki.com/mediawiki/images/c/c8/Goat_Cheese.png" },
+                    { name: "Muffin de semillas de amapola", png: "https://stardewvalleywiki.com/mediawiki/images/8/88/Poppyseed_Muffin.png" },
+                    { name: "Ensalada", png: "https://stardewvalleywiki.com/mediawiki/images/7/7e/Salad.png" },
+                    { name: "Salteado", png: "https://stardewvalleywiki.com/mediawiki/images/c/cc/Stir_Fry.png" },
+                    { name: "Trufa", png: "https://stardewvalleywiki.com/mediawiki/images/f/f2/Truffle.png" },
+                    { name: "Popurrí de verduras", png: "https://stardewvalleywiki.com/mediawiki/images/7/74/Vegetable_Medley.png" },
+                    { name: "Vino", png: "https://stardewvalleywiki.com/mediawiki/images/6/69/Wine.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [ 
+                    { name: "Madera de deriva", png: "https://stardewvalleywiki.com/mediawiki/images/e/ed/Driftwood.png" },
+                    { name: "Avellana", png: "https://stardewvalleywiki.com/mediawiki/images/c/c8/Hazelnut.png" },
+                    { name: "Rebozuelo", png: "https://stardewvalleywiki.com/mediawiki/images/e/e3/Chanterelle.png"},
+                    { name: "Seta común", png: "https://stardewvalleywiki.com/mediawiki/images/7/74/Common_Mushroom.png"},
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png"},
+                    { name: "Diente de león", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Dandelion.png"},
+                    { name: "Acebo", png: "https://stardewvalleywiki.com/mediawiki/images/5/59/Holly.png"},
+                    { name: "Puerro", png: "https://stardewvalleywiki.com/mediawiki/images/5/57/Leek.png"},
+                    { name: "Colmenilla", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Morel.png"},
+                    { name: "Seta lila", png: "https://stardewvalleywiki.com/mediawiki/images/4/4b/Purple_Mushroom.png"}, 
+                    { name: "Cebolleta", png: "https://stardewvalleywiki.com/mediawiki/images/3/34/Spring_Onion.png"},
+                    { name: "Raíz invernal", png: "https://stardewvalleywiki.com/mediawiki/images/9/92/Winter_Root.png"},
+                    { name: "Huevo (todos excepto Huevo nulo)", png: "https://stardewvalleywiki.com/mediawiki/images/5/5d/Egg.png"},
+                    { name: "Leche (todos los tipos)", png: "https://stardewvalleywiki.com/mediawiki/images/7/70/Milk.png"},
+                    { name: "Todas las frutas (excepto Mora y Fruta del cactus)", png: "https://stardewvalleywiki.com/mediawiki/images/2/26/Apricot.png"},
+                ]
+            },
+            {
+                id: "maru",
+                name: "Maru",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/f/f4/Maru.png", 
+                lovedGifts: [
+                    { name: "Pila", png: "https://stardewvalleywiki.com/mediawiki/images/c/c7/Battery_Pack.png" },
+                    { name: "Coliflor", png: "https://stardewvalleywiki.com/mediawiki/images/8/84/Cauliflower.png" },
+                    { name: "Queso de coliflor", png: "https://stardewvalleywiki.com/mediawiki/images/a/a4/Cheese_Cauliflower.png" },
+                    { name: "Diamante", png: "https://stardewvalleywiki.com/mediawiki/images/e/ea/Diamond.png" },
+                    { name: "Lingote de oro", png: "https://stardewvalleywiki.com/mediawiki/images/4/4e/Gold_Bar.png" },
+                    { name: "Lingote de iridio", png: "https://stardewvalleywiki.com/mediawiki/images/9/99/Iridium_Bar.png" },
+                    { name: "Pimientos explosivos", png: "https://stardewvalleywiki.com/mediawiki/images/e/e8/Pepper_Poppers.png" }, 
+                    { name: "Pastel de ruibarbo", png: "https://stardewvalleywiki.com/mediawiki/images/2/2b/Rhubarb_Pie.png" },
+                    { name: "Fresa", png: "https://stardewvalleywiki.com/mediawiki/images/3/31/Strawberry.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Lingote de cobre", png: "https://stardewvalleywiki.com/mediawiki/images/f/f1/Copper_Bar.png" },
+                    { name: "Lingote de hierro", png: "https://stardewvalleywiki.com/mediawiki/images/6/6c/Iron_Bar.png" },
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+                    { name: "Resina de roble", png: "https://stardewvalleywiki.com/mediawiki/images/4/41/Oak_Resin.png"},
+                    { name: "Brea de pino", png: "https://stardewvalleywiki.com/mediawiki/images/8/88/Pine_Tar.png"},
+                ]
+            },
+            {
+                id: "penny",
+                name: "Penny",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/a/ab/Penny.png", 
+                lovedGifts: [
+                    { name: "Diamante", png: "https://stardewvalleywiki.com/mediawiki/images/e/ea/Diamond.png" },
+                    { name: "Esmeralda", png: "https://stardewvalleywiki.com/mediawiki/images/6/6a/Emerald.png" },
+                    { name: "Melón", png: "https://stardewvalleywiki.com/mediawiki/images/1/19/Melon.png" },
+                    { name: "Amapola", png: "https://stardewvalleywiki.com/mediawiki/images/3/30/Poppy.png" },
+                    { name: "Muffin de semillas de amapola", png: "https://stardewvalleywiki.com/mediawiki/images/8/88/Poppyseed_Muffin.png" },
+                    { name: "Plato de raíces", png: "https://stardewvalleywiki.com/mediawiki/images/0/07/Roots_Platter.png" },
+                    { name: "Pargo", png: "https://stardewvalleywiki.com/mediawiki/images/7/73/Red_Snapper.png" }, 
+                    { name: "Sopa Tom Kha", png: "https://stardewvalleywiki.com/mediawiki/images/f/f5/Tom_Kha_Soup.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                ],
+                likedGifts: [
+                    { name: "Diente de león", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Dandelion.png" },
+                    { name: "Puerro", png: "https://stardewvalleywiki.com/mediawiki/images/5/57/Leek.png" },
+                    { name: "Leche (todos los tipos)", png: "https://stardewvalleywiki.com/mediawiki/images/7/70/Milk.png"},
+                    { name: "Todos los artefactos", png: "https://stardewvalleywiki.com/mediawiki/images/e/e1/Rusty_Spoon.png"}, 
+                ]
+            },
+            {
+                id: "sam",
+                name: "Sam",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/9/94/Sam.png",
+                lovedGifts: [
+                    { name: "Fruta del cactus", png: "https://stardewvalleywiki.com/mediawiki/images/3/32/Cactus_Fruit.png" }, 
+                    { name: "Barra de arce", png: "https://stardewvalleywiki.com/mediawiki/images/8/87/Maple_Bar.png" }, 
+                    { name: "Pizza", png: "https://stardewvalleywiki.com/mediawiki/images/f/f4/Pizza.png" },
+                    { name: "Ojo de tigre", png: "https://stardewvalleywiki.com/mediawiki/images/a/a2/Tigerseye.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Joja-Cola", png: "https://stardewvalleywiki.com/mediawiki/images/9/91/Joja_Cola.png" },
+                    { name: "Huevo (todos excepto Huevo nulo)", png: "https://stardewvalleywiki.com/mediawiki/images/5/5d/Egg.png"},
+                    { name: "Todas las gemas (excepto Fragmento Prismatico y Ojo de tigre)", png: "https://stardewvalleywiki.com/mediawiki/images/2/2e/Amethyst.png"}, 
+                ]
+            },
+            {
+                id: "sebastian",
+                name: "Sebastian",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/a/a8/Sebastian.png", 
+                lovedGifts: [
+                    { name: "Lágrima helada", png: "https://stardewvalleywiki.com/mediawiki/images/b/b0/Frozen_Tear.png" },
+                    { name: "Obsidiana", png: "https://stardewvalleywiki.com/mediawiki/images/2/23/Obsidian.png" },
+                    { name: "Sashimi", png: "https://stardewvalleywiki.com/mediawiki/images/4/47/Sashimi.png" },
+                    { name: "Sopa de calabaza", png: "https://stardewvalleywiki.com/mediawiki/images/5/55/Pumpkin_Soup.png" },
+                    { name: "Huevo nulo", png: "https://stardewvalleywiki.com/mediawiki/images/5/58/Void_Egg.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+                    { name: "Café", png: "https://stardewvalleywiki.com/mediawiki/images/e/e9/Coffee.png" },
+                    { name: "Pizza", png: "https://stardewvalleywiki.com/mediawiki/images/f/f4/Pizza.png"},
+                    { name: "Espaguetis", png: "https://stardewvalleywiki.com/mediawiki/images/3/3c/Spaghetti.png"},
+                    { name: "Barrita energética", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Field_Snack.png"},
+                    { name: "Maki roll", png: "https://stardewvalleywiki.com/mediawiki/images/a/a0/Maki_Roll.png"},
+                    { name: "Puerro", png: "https://stardewvalleywiki.com/mediawiki/images/5/57/Leek.png"},
+                ]
+            },
+            {
+                id: "shane",
+                name: "Shane",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/8/8b/Shane.png",
+                lovedGifts: [
+                    { name: "Cerveza", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Beer.png" },
+                    { name: "Pimiento picante", png: "https://stardewvalleywiki.com/mediawiki/images/f/f1/Hot_Pepper.png" },
+                    { name: "Pimientos explosivos", png: "https://stardewvalleywiki.com/mediawiki/images/e/e8/Pepper_Poppers.png" },
+                    { name: "Pizza", png: "https://stardewvalleywiki.com/mediawiki/images/f/f4/Pizza.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Huevo (todos excepto Huevo nulo)", png: "https://stardewvalleywiki.com/mediawiki/images/5/5d/Egg.png"},
+                    { name: "Fruta (todas excepto Pimiento picante)", png: "https://stardewvalleywiki.com/mediawiki/images/6/69/Grape.png"},
+                    { name: "Café", png: "https://stardewvalleywiki.com/mediawiki/images/e/e9/Coffee.png"},
+                    { name: "Zumo", png: "https://stardewvalleywiki.com/mediawiki/images/1/17/Juice.png"},
+                    { name: "Helado", png: "https://stardewvalleywiki.com/mediawiki/images/7/73/Ice_Cream.png"},
+                ]
+            },
+            // Aldeanos no solteros
+            {
+                id: "caroline",
+                name: "Caroline",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/8/87/Caroline.png",
+                lovedGifts: [
+                    { name: "Taco de pescado", png: "https://stardewvalleywiki.com/mediawiki/images/0/07/Fish_Taco.png" },
+                    { name: "Flor de verano", png: "https://stardewvalleywiki.com/mediawiki/images/0/02/Summer_Spangle.png" }, 
+                    { name: "Té verde", png: "https://stardewvalleywiki.com/mediawiki/images/c/c3/Green_Tea.png" },
+                    { name: "Curry tropical", png: "https://stardewvalleywiki.com/mediawiki/images/7/7e/Tropical_Curry.png" }, 
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Todas las flores (excepto Amapola)", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Tulip.png"}, 
+                ]
+            },
+            {
+                id: "clint",
+                name: "Clint",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/3/31/Clint.png",
+                lovedGifts: [
+                    { name: "Amatista", png: "https://stardewvalleywiki.com/mediawiki/images/2/2e/Amethyst.png" }, 
+                    { name: "Aguamarina", png: "https://stardewvalleywiki.com/mediawiki/images/3/35/Aquamarine.png" },
+                    { name: "Lingote de oro", png: "https://stardewvalleywiki.com/mediawiki/images/4/4e/Gold_Bar.png" },
+                    { name: "Lingote de iridio", png: "https://stardewvalleywiki.com/mediawiki/images/9/99/Iridium_Bar.png" },
+                    { name: "Omnigeoda", png: "https://stardewvalleywiki.com/mediawiki/images/5/5c/Omni_Geode.png" },
+                    { name: "Rubí", png: "https://stardewvalleywiki.com/mediawiki/images/a/a9/Ruby.png" },
+                    { name: "Topacio", png: "https://stardewvalleywiki.com/mediawiki/images/a/a5/Topaz.png" },
+                    { name: "Esmeralda", png: "https://stardewvalleywiki.com/mediawiki/images/6/6a/Emerald.png" },
+                    { name: "Jade", png: "https://stardewvalleywiki.com/mediawiki/images/7/7e/Jade.png" },
+                    { name: "Risotto de cabeza de violín", png: "https://stardewvalleywiki.com/mediawiki/images/9/9a/Fiddlehead_Risotto.png"},
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Lingote de cobre", png: "https://stardewvalleywiki.com/mediawiki/images/f/f1/Copper_Bar.png" },
+                    { name: "Lingote de hierro", png: "https://stardewvalleywiki.com/mediawiki/images/6/6c/Iron_Bar.png" },
+                    { name: "Mena de cobre", png: "https://stardewvalleywiki.com/mediawiki/images/7/78/Copper_Ore.png"},
+                    { name: "Mena de hierro", png: "https://stardewvalleywiki.com/mediawiki/images/8/87/Iron_Ore.png"},
+                    { name: "Carbón", png: "https://stardewvalleywiki.com/mediawiki/images/0/02/Coal.png"},
+                ]
+            },
+            {
+                id: "demetrius",
+                name: "Demetrius",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/f/f9/Demetrius.png",
+                lovedGifts: [
+                    { name: "Guiso de judías", png: "https://stardewvalleywiki.com/mediawiki/images/5/54/Bean_Hotpot.png" },
+                    { name: "Helado", png: "https://stardewvalleywiki.com/mediawiki/images/7/73/Ice_Cream.png" },
+                    { name: "Pudin de arroz", png: "https://stardewvalleywiki.com/mediawiki/images/c/c2/Rice_Pudding.png" },
+                    { name: "Fresa", png: "https://stardewvalleywiki.com/mediawiki/images/3/31/Strawberry.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Seta común", png: "https://stardewvalleywiki.com/mediawiki/images/7/74/Common_Mushroom.png" },
+                    { name: "Huevo (todos excepto Huevo nulo)", png: "https://stardewvalleywiki.com/mediawiki/images/5/5d/Egg.png"},
+                    { name: "Todas las frutas (excepto Fresa)", png: "https://stardewvalleywiki.com/mediawiki/images/2/26/Apricot.png"}, 
+                    { name: "Seta lila", png: "https://stardewvalleywiki.com/mediawiki/images/4/4b/Purple_Mushroom.png"}, 
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png"},
+                ]
+            },
+            {
+                id: "evelyn",
+                name: "Evelyn",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Evelyn.png",
+                lovedGifts: [
+                    { name: "Remolacha", png: "https://stardewvalleywiki.com/mediawiki/images/a/a4/Beet.png" },
+                    { name: "Pastel de chocolate", png: "https://stardewvalleywiki.com/mediawiki/images/8/87/Chocolate_Cake.png" }, 
+                    { name: "Diamante", png: "https://stardewvalleywiki.com/mediawiki/images/e/ea/Diamond.png" },
+                    { name: "Rosa de las hadas", png: "https://stardewvalleywiki.com/mediawiki/images/5/5c/Fairy_Rose.png" },
+                    { name: "Relleno", png: "https://stardewvalleywiki.com/mediawiki/images/9/9d/Stuffing.png" },
+                    { name: "Tulipán", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Tulip.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Leche (todos los tipos)", png: "https://stardewvalleywiki.com/mediawiki/images/7/70/Milk.png" }, 
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Todas las flores (excepto Amapola y Tulipán)", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Sunflower.png"}, 
+                ]
+            },
+            {
+                id: "george",
+                name: "George",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/7/78/George.png",
+                lovedGifts: [
+                    { name: "Seta frita", png: "https://stardewvalleywiki.com/mediawiki/images/9/9b/Fried_Mushroom.png" },
+                    { name: "Puerro", png: "https://stardewvalleywiki.com/mediawiki/images/5/57/Leek.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Café", png: "https://stardewvalleywiki.com/mediawiki/images/e/e9/Coffee.png"},
+                ]
+            },
+            {
+                id: "gus",
+                name: "Gus",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/5/52/Gus.png",
+                lovedGifts: [
+                    { name: "Diamante", png: "https://stardewvalleywiki.com/mediawiki/images/e/ea/Diamond.png" },
+                    { name: "Escargots", png: "https://stardewvalleywiki.com/mediawiki/images/f/f6/Escargot.png" }, 
+                    { name: "Taco de pescado", png: "https://stardewvalleywiki.com/mediawiki/images/0/07/Fish_Taco.png" },
+                    { name: "Naranja", png: "https://stardewvalleywiki.com/mediawiki/images/4/43/Orange.png" },
+                    { name: "Curry tropical", png: "https://stardewvalleywiki.com/mediawiki/images/7/7e/Tropical_Curry.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Café", png: "https://stardewvalleywiki.com/mediawiki/images/e/e9/Coffee.png"},
+                    { name: "Helado", png: "https://stardewvalleywiki.com/mediawiki/images/7/73/Ice_Cream.png"},
+                ]
+            },
+            {
+                id: "jas",
+                name: "Jas",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/5/55/Jas.png",
+                lovedGifts: [
+                    { name: "Rosa de las hadas", png: "https://stardewvalleywiki.com/mediawiki/images/5/5c/Fairy_Rose.png" },
+                    { name: "Pastel rosa", png: "https://stardewvalleywiki.com/mediawiki/images/f/f6/Pink_Cake.png" },
+                    { name: "Pudin de ciruela", png: "https://stardewvalleywiki.com/mediawiki/images/c/cd/Plum_Pudding.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Coco", png: "https://stardewvalleywiki.com/mediawiki/images/2/2f/Coconut.png" },
+                    { name: "Miel", png: "https://stardewvalleywiki.com/mediawiki/images/1/12/Honey.png"},
+                    { name: "Galleta", png: "https://stardewvalleywiki.com/mediawiki/images/7/73/Cookie.png"},
+                ]
+            },
+            {
+                id: "jodi",
+                name: "Jodi",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/4/41/Jodi.png",
+                lovedGifts: [
+                    { name: "Galleta con chispas de chocolate", png: "https://stardewvalleywiki.com/mediawiki/images/f/f0/Chocolate_Chip_Cookie.png" }, 
+                    { name: "Anguila frita", png: "https://stardewvalleywiki.com/mediawiki/images/1/18/Fried_Eel.png" },
+                    { name: "Tortitas", png: "https://stardewvalleywiki.com/mediawiki/images/6/6e/Pancakes.png" }, 
+                    { name: "Pastel de ruibarbo", png: "https://stardewvalleywiki.com/mediawiki/images/2/2b/Rhubarb_Pie.png" },
+                    { name: "Popurrí de verduras", png: "https://stardewvalleywiki.com/mediawiki/images/7/74/Vegetable_Medley.png" }, 
+                    { name: "Diamante", png: "https://stardewvalleywiki.com/mediawiki/images/e/ea/Diamond.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Huevo (todos excepto Huevo nulo)", png: "https://stardewvalleywiki.com/mediawiki/images/5/5d/Egg.png"},
+                    { name: "Fruta (todas)", png: "https://stardewvalleywiki.com/mediawiki/images/6/69/Grape.png"}, 
+                    { name: "Leche (todos los tipos)", png: "https://stardewvalleywiki.com/mediawiki/images/7/70/Milk.png" },
+                    { name: "Ajo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cc/Garlic.png"},
+                ]
+            },
+            {
+                id: "kent",
+                name: "Kent",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/9/99/Kent.png", 
+                lovedGifts: [
+                    { name: "Risotto de cabeza de violín", png: "https://stardewvalleywiki.com/mediawiki/images/9/9a/Fiddlehead_Risotto.png" },
+                    { name: "Avellanas tostadas", png: "https://stardewvalleywiki.com/mediawiki/images/c/cb/Roasted_Hazelnuts.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Huevo (todos excepto Huevo nulo)", png: "https://stardewvalleywiki.com/mediawiki/images/5/5d/Egg.png"},
+                    { name: "Fruta (todas)", png: "https://stardewvalleywiki.com/mediawiki/images/6/69/Grape.png"},
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Maíz", png: "https://stardewvalleywiki.com/mediawiki/images/f/f8/Corn.png"},
+                ]
+            },
+            {
+                id: "krobus",
+                name: "Krobus",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/7/71/Krobus.png",
+                lovedGifts: [
+                    { name: "Diamante", png: "https://stardewvalleywiki.com/mediawiki/images/e/ea/Diamond.png" },
+                    { name: "Lingote de iridio", png: "https://stardewvalleywiki.com/mediawiki/images/9/99/Iridium_Bar.png" },
+                    { name: "Calabaza", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Pumpkin.png" }, 
+                    { name: "Mayonesa de vacío", png: "https://stardewvalleywiki.com/mediawiki/images/0/0e/Void_Mayonnaise.png" },
+                    { name: "Rábano picante silvestre", png: "https://stardewvalleywiki.com/mediawiki/images/9/90/Wild_Horseradish.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" }, 
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" }, 
+                ],
+                likedGifts: [
+                    { name: "Lingote de oro", png: "https://stardewvalleywiki.com/mediawiki/images/4/4e/Gold_Bar.png" },
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+                    { name: "Huevo nulo", png: "https://stardewvalleywiki.com/mediawiki/images/5/58/Void_Egg.png"},
+                    { name: "Esencia de vacío", png: "https://stardewvalleywiki.com/mediawiki/images/1/1f/Void_Essence.png"},
+                    { name: "Salmón de vacío", png: "https://stardewvalleywiki.com/mediawiki/images/9/9d/Void_Salmon.png"},
+                ]
+            },
+            {
+                id: "leo",
+                name: "Leo",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/1/1d/Leo.png",
+                lovedGifts: [
+                    { name: "Pluma de pato", png: "https://stardewvalleywiki.com/mediawiki/images/f/f8/Duck_Feather.png" },
+                    { name: "Mango", png: "https://stardewvalleywiki.com/mediawiki/images/3/38/Mango.png" },
+                    { name: "Huevo de avestruz", png: "https://stardewvalleywiki.com/mediawiki/images/9/93/Ostrich_Egg.png" },
+                    { name: "Poi", png: "https://stardewvalleywiki.com/mediawiki/images/f/f1/Poi.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                ],
+                likedGifts: [
+                    { name: "Diente de dragón", png: "https://stardewvalleywiki.com/mediawiki/images/c/c2/Dragon_Tooth.png" },
+                    { name: "Concha de nautilo", png: "https://stardewvalleywiki.com/mediawiki/images/3/3d/Nautilus_Shell.png" },
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }, 
+                    { name: "Concha arcoíris", png: "https://stardewvalleywiki.com/mediawiki/images/2/23/Rainbow_Shell.png"},
+                    { name: "Pepino de mar", png: "https://stardewvalleywiki.com/mediawiki/images/8/87/Sea_Cucumber.png"},
+                    { name: "Erizo de mar", png: "https://stardewvalleywiki.com/mediawiki/images/b/b4/Sea_Urchin.png"},
+                ]
+            },
+            {
+                id: "lewis",
+                name: "Lewis",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/2/2b/Lewis.png",
+                lovedGifts: [
+                    { name: "Abundancia otoñal", png: "https://stardewvalleywiki.com/mediawiki/images/f/f9/Autumn%27s_Bounty.png" },
+                    { name: "Batatas glaseadas", png: "https://stardewvalleywiki.com/mediawiki/images/0/01/Glazed_Yams.png" },
+                    { name: "Pimiento picante", png: "https://stardewvalleywiki.com/mediawiki/images/f/f1/Hot_Pepper.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Arándano", png: "https://stardewvalleywiki.com/mediawiki/images/9/9e/Blueberry.png" },
+                    { name: "Coco", png: "https://stardewvalleywiki.com/mediawiki/images/2/2f/Coconut.png" },
+                    { name: "Fruta del cactus", png: "https://stardewvalleywiki.com/mediawiki/images/3/32/Cactus_Fruit.png"},
+                    { name: "Mermelada", png: "https://stardewvalleywiki.com/mediawiki/images/0/05/Jelly.png"},
+                ]
+            },
+            {
+                id: "linus",
+                name: "Linus",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/3/31/Linus.png",
+                lovedGifts: [
+                    { name: "Tarta de arándanos", png: "https://stardewvalleywiki.com/mediawiki/images/9/9e/Blueberry.png" }, 
+                    { name: "Ñame", png: "https://stardewvalleywiki.com/mediawiki/images/5/52/Yam.png" },
+                    { name: "Coco", png: "https://stardewvalleywiki.com/mediawiki/images/2/2f/Coconut.png" },
+                    { name: "Fruta del cactus", png: "https://stardewvalleywiki.com/mediawiki/images/3/32/Cactus_Fruit.png" },
+                    { name: "Plato del mar", png: "https://stardewvalleywiki.com/mediawiki/images/9/94/Dish_O%27_The_Sea.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Seta común", png: "https://stardewvalleywiki.com/mediawiki/images/7/74/Common_Mushroom.png" },
+                    { name: "Avellana", png: "https://stardewvalleywiki.com/mediawiki/images/c/c8/Hazelnut.png" },
+                    { name: "Huevo (todos excepto Huevo nulo)", png: "https://stardewvalleywiki.com/mediawiki/images/5/5d/Egg.png"},
+                    { name: "Fruta (todas excepto Albaricoque, Coco, Fruta del cactus, Granada, Mango, Melocotón)", png: "https://stardewvalleywiki.com/mediawiki/images/6/69/Grape.png"}, 
+                    { name: "Leche (todos los tipos)", png: "https://stardewvalleywiki.com/mediawiki/images/7/70/Milk.png"},
+                ]
+            },
+            {
+                id: "marnie",
+                name: "Marnie",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/5/52/Marnie.png",
+                lovedGifts: [
+                    { name: "Diamante", png: "https://stardewvalleywiki.com/mediawiki/images/e/ea/Diamond.png" },
+                    { name: "Almuerzo de granjero", png: "https://stardewvalleywiki.com/mediawiki/images/9/97/Farmer%27s_Lunch.png" },
+                    { name: "Pastel rosa", png: "https://stardewvalleywiki.com/mediawiki/images/f/f6/Pink_Cake.png" },
+                    { name: "Pastel de calabaza", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Pumpkin.png" }, 
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Huevo (todos excepto Huevo nulo)", png: "https://stardewvalleywiki.com/mediawiki/images/5/5d/Egg.png"},
+                    { name: "Leche (todos los tipos)", png: "https://stardewvalleywiki.com/mediawiki/images/7/70/Milk.png" },
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+                    { name: "Ajo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cc/Garlic.png"},
+                ]
+            },
+            {
+                id: "pam",
+                name: "Pam",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/d/da/Pam.png",
+                lovedGifts: [
+                    { name: "Cerveza", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Beer.png" },
+                    { name: "Fruta del cactus", png: "https://stardewvalleywiki.com/mediawiki/images/3/32/Cactus_Fruit.png" },
+                    { name: "Batatas glaseadas", png: "https://stardewvalleywiki.com/mediawiki/images/0/01/Glazed_Yams.png" },
+                    { name: "Hidromiel", png: "https://stardewvalleywiki.com/mediawiki/images/8/84/Mead.png" },
+                    { name: "Cerveza clara", png: "https://stardewvalleywiki.com/mediawiki/images/5/58/Pale_Ale.png" }, 
+                    { name: "Chirivía", png: "https://stardewvalleywiki.com/mediawiki/images/e/e1/Parsnip.png" },
+                    { name: "Sopa de chirivía", png: "https://stardewvalleywiki.com/mediawiki/images/7/75/Parsnip_Soup.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Fruta (todas)", png: "https://stardewvalleywiki.com/mediawiki/images/6/69/Grape.png"}, 
+                    { name: "Leche (todos los tipos)", png: "https://stardewvalleywiki.com/mediawiki/images/7/70/Milk.png" },
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Maíz", png: "https://stardewvalleywiki.com/mediawiki/images/f/f8/Corn.png"},
+                    { name: "Lúpulo", png: "https://stardewvalleywiki.com/mediawiki/images/5/59/Hops.png"},
+                ]
+            },
+            {
+                id: "pierre",
+                name: "Pierre",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/7/7e/Pierre.png",
+                lovedGifts: [
+                    { name: "Calamar frito", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Fried_Calamari.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Huevo (todos excepto Huevo nulo)", png: "https://stardewvalleywiki.com/mediawiki/images/5/5d/Egg.png"},
+                    { name: "Leche (todos los tipos)", png: "https://stardewvalleywiki.com/mediawiki/images/7/70/Milk.png" },
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Diente de león", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Dandelion.png"},
+                    { name: "Brecol", png: "https://stardewvalleywiki.com/mediawiki/images/9/98/Broccoli.png"},
+                ]
+            },
+            {
+                id: "robin",
+                name: "Robin",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/1/1b/Robin.png",
+                lovedGifts: [
+                    { name: "Queso de cabra", png: "https://stardewvalleywiki.com/mediawiki/images/c/c8/Goat_Cheese.png" },
+                    { name: "Melocotón", png: "https://stardewvalleywiki.com/mediawiki/images/e/e4/Peach.png" },
+                    { name: "Espaguetis", png: "https://stardewvalleywiki.com/mediawiki/images/3/3c/Spaghetti.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Leche (todos los tipos)", png: "https://stardewvalleywiki.com/mediawiki/images/7/70/Milk.png" },
+                    { name: "Madera noble", png: "https://stardewvalleywiki.com/mediawiki/images/e/ed/Hardwood.png" },
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+                    { name: "Cereza", png: "https://stardewvalleywiki.com/mediawiki/images/2/20/Cherry.png"},
+                    { name: "Albaricoque", png: "https://stardewvalleywiki.com/mediawiki/images/2/26/Apricot.png"},
+                ]
+            },
+            {
+                id: "sandy",
+                name: "Sandy",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/4/4e/Sandy.png", 
+                lovedGifts: [
+                    { name: "Azafrán", png: "https://stardewvalleywiki.com/mediawiki/images/f/f8/Crocus.png" },
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Guisante de olor", png: "https://stardewvalleywiki.com/mediawiki/images/5/51/Sweet_Pea.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Tela", png: "https://stardewvalleywiki.com/mediawiki/images/e/e1/Cloth.png" },
+                    { name: "Lana", png: "https://stardewvalleywiki.com/mediawiki/images/9/99/Wool.png" },
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+                    { name: "Todas las frutas (excepto Fruta del cactus, Mora y Salmón)", png: "https://stardewvalleywiki.com/mediawiki/images/6/69/Grape.png"}, 
+                    { name: "Todas las gemas (excepto Diamante y Fragmento prismático)", png: "https://stardewvalleywiki.com/mediawiki/images/2/2e/Amethyst.png"}, 
+                ]
+            },
+            {
+                id: "vincent",
+                name: "Vincent",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/f/f1/Vincent.png",
+                lovedGifts: [
+                    { name: "Refresco de jengibre", png: "https://stardewvalleywiki.com/mediawiki/images/1/1a/Ginger_Ale.png" },
+                    { name: "Uva", png: "https://stardewvalleywiki.com/mediawiki/images/6/69/Grape.png" },
+                    { name: "Pastel rosa", png: "https://stardewvalleywiki.com/mediawiki/images/f/f6/Pink_Cake.png" },
+                    { name: "Caramelo de arándano rojo", png: "https://stardewvalleywiki.com/mediawiki/images/2/2a/Cranberry_Candy.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Coco", png: "https://stardewvalleywiki.com/mediawiki/images/2/2f/Coconut.png" },
+                    { name: "Narciso", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Daffodil.png" },
+                    { name: "Helado", png: "https://stardewvalleywiki.com/mediawiki/images/7/73/Ice_Cream.png"},
+                    { name: "Miel", png: "https://stardewvalleywiki.com/mediawiki/images/1/12/Honey.png"},
+                ]
+            },
+            {
+                id: "willy",
+                name: "Willy",
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/8/82/Willy.png",
+                lovedGifts: [
+                    { name: "Bagre", png: "https://stardewvalleywiki.com/mediawiki/images/9/99/Catfish.png" },
+                    { name: "Diamante", png: "https://stardewvalleywiki.com/mediawiki/images/e/ea/Diamond.png" },
+                    { name: "Lingote de iridio", png: "https://stardewvalleywiki.com/mediawiki/images/9/99/Iridium_Bar.png" },
+                    { name: "Hidromiel", png: "https://stardewvalleywiki.com/mediawiki/images/8/84/Mead.png" },
+                    { name: "Pulpo", png: "https://stardewvalleywiki.com/mediawiki/images/4/47/Octopus.png" },
+                    { name: "Calabaza", png: "https://stardewvalleywiki.com/mediawiki/images/6/64/Pumpkin.png" }, 
+                    { name: "Pepino de mar", png: "https://stardewvalleywiki.com/mediawiki/images/8/87/Sea_Cucumber.png" },
+                    { name: "Esturión", png: "https://stardewvalleywiki.com/mediawiki/images/3/34/Sturgeon.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Pata de conejo", png: "https://stardewvalleywiki.com/mediawiki/images/c/c1/Rabbit%27s_Foot.png" }
+                ],
+                likedGifts: [
+                    { name: "Lingote de oro", png: "https://stardewvalleywiki.com/mediawiki/images/4/4e/Gold_Bar.png" },
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+                    { name: "Todos los pescados (excepto Carpa, Bagre, Pulpo, Pepino de mar, Esturión, Caracol, Bígaro y Mejillón)", png: "https://stardewvalleywiki.com/mediawiki/images/2/22/Sardine.png"}, 
+                    { name: "Cerveza", png: "https://stardewvalleywiki.com/mediawiki/images/b/b1/Beer.png"},
+                ]
+            },
+            {
+                id: "wizard",
+                name: "Mago", 
+                portrait: "https://stardewvalleywiki.com/mediawiki/images/c/c7/Wizard.png",
+                lovedGifts: [
+                    { name: "Esencia de vacío", png: "https://stardewvalleywiki.com/mediawiki/images/1/1f/Void_Essence.png" },
+                    { name: "Fragmento prismático", png: "https://stardewvalleywiki.com/mediawiki/images/5/56/Prismatic_Shard.png" },
+                    { name: "Perla", png: "https://stardewvalleywiki.com/mediawiki/images/1/14/Pearl.png" },
+                    { name: "Superpepino", png: "https://stardewvalleywiki.com/mediawiki/images/5/59/Super_Cucumber.png" },
+                    { name: "Seta morada", png: "https://stardewvalleywiki.com/mediawiki/images/4/4b/Purple_Mushroom.png" },
+                    { name: "Esencia solar", png: "https://stardewvalleywiki.com/mediawiki/images/5/5e/Solar_Essence.png" },
+                    { name: "Calabaza de oro", png: "https://stardewvalleywiki.com/mediawiki/images/c/c9/Golden_Pumpkin.png" },
+                    { name: "Caramelo de roca mágico", png: "https://stardewvalleywiki.com/mediawiki/images/8/8e/Magic_Rock_Candy.png" },
+                ],
+                likedGifts: [
+                    { name: "Cuarzo", png: "https://stardewvalleywiki.com/mediawiki/images/c/cf/Quartz.png" },
+                    { name: "Geoda", png: "https://stardewvalleywiki.com/mediawiki/images/3/3b/Geode.png" }, 
+                    { name: "Geoda helada", png: "https://stardewvalleywiki.com/mediawiki/images/0/05/Frozen_Geode.png"},
+                    { name: "Geoda de magma", png: "https://stardewvalleywiki.com/mediawiki/images/3/3f/Magma_Geode.png"},
+                    { name: "Omnigeoda", png: "https://stardewvalleywiki.com/mediawiki/images/5/5c/Omni_Geode.png"},
+                    { name: "Todas las gemas (excepto Diamante, Fragmento prismático y Perla)", png: "https://stardewvalleywiki.com/mediawiki/images/2/2e/Amethyst.png"}, 
+                ]
+            }
+        ];
 
-        // --- CONFIGURACIÓN DEL JUEGO Y PERSONALIZACIÓN DE ARTE ---
-        // Puedes cambiar estos valores para modificar la apariencia y la jugabilidad.
+        const characterGrid = document.getElementById('characterGrid');
+        const modal = document.getElementById('giftModal');
+        const modalCharacterName = document.getElementById('modalCharacterName');
+        const modalCharacterPortrait = document.getElementById('modalCharacterPortrait');
+        
+        const specificLovedGiftsListEl = document.getElementById('specificLovedGiftsList');
+        const universalLovedGiftsListEl = document.getElementById('universalLovedGiftsList');
+        const likedGiftsListEl = document.getElementById('likedGiftsList');
+        
+        const closeModalButton = document.getElementById('closeModalButton');
 
-        // Pájaro
-        const birdConfig = {
-            x: 50,
-            y: canvas.height / 2,
-            width: 34, // Ancho del pájaro (ajusta si usas imagen)
-            height: 24, // Alto del pájaro (ajusta si usas imagen)
-            color: 'yellow', // Color por defecto si no usas imagen
-            gravity: 0.4, // Aceleración hacia abajo
-            lift: -8,     // Impulso hacia arriba al saltar
-            velocityY: 0,
-            imageSrc: 'https://putrinskii.s-ul.eu/HeAU1ssa', // Ruta a tu imagen del pájaro: 'path/to/your/bird.png'
-            // Ejemplo: imageSrc: 'https://placehold.co/34x24/FFFF00/000000?text=Bird'
-        };
-        let birdImage = null;
-        if (birdConfig.imageSrc) {
-            birdImage = new Image();
-            birdImage.src = birdConfig.imageSrc;
-            birdImage.onerror = () => {
-                console.error("Error al cargar la imagen del pájaro. Usando color por defecto.");
-                birdImage = null; // Vuelve a usar el color si la imagen falla
+        const specificLovesHeader = document.getElementById('specificLovesSectionHeader');
+        const universalLovesHeader = document.getElementById('universalLovesSectionHeader');
+
+        // Nombres en español para los regalos universales amados
+        const potentialUniversalLoveNames = ["Calabaza de oro", "Caramelo de roca mágico", "Perla", "Fragmento prismático", "Pata de conejo"];
+
+
+        stardewCharacters.forEach(character => {
+            const card = document.createElement('div');
+            card.classList.add('character-card');
+            card.dataset.characterId = character.id;
+
+            const img = document.createElement('img');
+            img.src = character.portrait;
+            img.alt = character.name;
+            img.onerror = () => { 
+                img.src = `https://placehold.co/72x72/e2e8f0/4a5568?text=${character.name.substring(0,1)}`; 
+                img.alt = `Retrato de ${character.name} no disponible`;
             };
-        }
 
-        // Tuberías
-        const pipeConfig = {
-            width: 50,
-            gap: 120,    // Espacio vertical entre tuberías
-            speed: 2,    // Velocidad a la que se mueven las tuberías
-            frequency: 120, // Cuántos frames antes de generar una nueva tubería (más bajo = más tuberías)
-            color: 'green', // Color por defecto si no usas imagen
-            imageTopSrc: 'https://putrinskii.s-ul.eu/ludZcYyj', // Ruta a tu imagen de tubería superior: 'path/to/pipe-top.png'
-            imageBottomSrc: 'https://putrinskii.s-ul.eu/ludZcYyj', // Ruta a tu imagen de tubería inferior: 'path/to/pipe-bottom.png'
-            // Ejemplo: imageTopSrc: 'https://placehold.co/50x200/008000/FFFFFF?text=PipeT'
-            // Ejemplo: imageBottomSrc: 'https://placehold.co/50x200/008000/FFFFFF?text=PipeB'
-        };
-        let pipeTopImage = null;
-        let pipeBottomImage = null;
-        if (pipeConfig.imageTopSrc) {
-            pipeTopImage = new Image();
-            pipeTopImage.src = pipeConfig.imageTopSrc;
-            pipeTopImage.onerror = () => { pipeTopImage = null; console.error("Error al cargar imagen tubería superior."); };
-        }
-        if (pipeConfig.imageBottomSrc) {
-            pipeBottomImage = new Image();
-            pipeBottomImage.src = pipeConfig.imageBottomSrc;
-            pipeBottomImage.onerror = () => { pipeBottomImage = null; console.error("Error al cargar imagen tubería inferior."); };
-        }
+            const nameEl = document.createElement('p');
+            nameEl.textContent = character.name;
 
-        // Fondo del Canvas (si no usas CSS para esto)
-        // Para usar una imagen de fondo directamente en el canvas (se dibujará en cada frame):
-        const backgroundConfig = {
-            imageSrc: 'https://putrinskii.s-ul.eu/PADJ5H8s', // 'path/to/your/canvas-background.png'
-            // Ejemplo: imageSrc: 'https://placehold.co/320x480/87CEEB/FFFFFF?text=Fondo'
-        };
-        let backgroundImage = null;
-        if (backgroundConfig.imageSrc) {
-            backgroundImage = new Image();
-            backgroundImage.src = backgroundConfig.imageSrc;
-            backgroundImage.onerror = () => { backgroundImage = null; console.error("Error al cargar imagen de fondo del canvas."); };
-        }
-        // --- FIN DE CONFIGURACIÓN DEL JUEGO Y PERSONALIZACIÓN DE ARTE ---
+            card.appendChild(img);
+            card.appendChild(nameEl);
+            characterGrid.appendChild(card);
 
+            card.addEventListener('click', () => displayCharacterInfo(character));
+        });
 
-        let pipes = [];
-        let score = 0;
-        let gameFrames = 0;
-        let gameState = 'start'; // 'start', 'playing', 'gameOver'
-        let animationFrameId;
+        function populateGiftList(listElement, gifts) {
+            listElement.innerHTML = ''; 
+            if (gifts && gifts.length > 0) {
+                gifts.forEach(gift => {
+                    const li = document.createElement('li');
+                    
+                    if (gift.png) {
+                        const itemImg = document.createElement('img');
+                        itemImg.src = gift.png;
+                        itemImg.alt = gift.name;
+                        itemImg.classList.add('gift-item-png');
+                        itemImg.onerror = function() { 
+                            this.style.display = 'none'; 
+                        };
+                        li.appendChild(itemImg);
+                    }
 
-        function drawBird() {
-            if (birdImage && birdImage.complete) {
-                // Dibuja la imagen del pájaro
-                ctx.drawImage(birdImage, birdConfig.x, birdConfig.y, birdConfig.width, birdConfig.height);
-            } else {
-                // Dibuja un rectángulo si no hay imagen o no ha cargado
-                ctx.fillStyle = birdConfig.color;
-                ctx.fillRect(birdConfig.x, birdConfig.y, birdConfig.width, birdConfig.height);
+                    const nameSpan = document.createElement('span');
+                    nameSpan.classList.add('gift-item-name');
+                    nameSpan.textContent = gift.name;
+                    li.appendChild(nameSpan);
+                    
+                    listElement.appendChild(li);
+                });
             }
         }
 
-        function updateBird() {
-            birdConfig.velocityY += birdConfig.gravity;
-            birdConfig.y += birdConfig.velocityY;
+        function displayCharacterInfo(character) {
+            modalCharacterName.textContent = character.name;
+            modalCharacterPortrait.src = character.portrait;
+            modalCharacterPortrait.alt = character.name;
+            modalCharacterPortrait.onerror = () => { 
+                modalCharacterPortrait.src = `https://placehold.co/88x88/e2e8f0/4a5568?text=${character.name.substring(0,1)}`;
+                modalCharacterPortrait.alt = `Retrato de ${character.name} no disponible`;
+            };
+            
+            const charSpecificLoves = [];
+            const charUniversalLoves = [];
 
-            // Colisión con bordes superior/inferior
-            if (birdConfig.y + birdConfig.height > canvas.height || birdConfig.y < 0) {
-                gameOver();
-            }
-        }
+            if (character.lovedGifts) {
+                character.lovedGifts.forEach(gift => {
+                    let isTrulyUniversalForThisChar = false;
+                    if (potentialUniversalLoveNames.includes(gift.name)) {
+                        // Aplicar excepciones conocidas
+                        if (gift.name === "Fragmento prismático" && character.id === "haley") {
+                            isTrulyUniversalForThisChar = false;
+                        } else if (character.id === "krobus" && (gift.name === "Calabaza de oro" || gift.name === "Caramelo de roca mágico" || gift.name === "Fragmento prismático" || gift.name === "Pata de conejo")) {
+                            isTrulyUniversalForThisChar = false;
+                        } else if (gift.name === "Pata de conejo" && (character.id === "penny" || (character.id === "leo" && !character.lovedGifts.find(g => g.name === "Pata de conejo")) )) { 
+                             isTrulyUniversalForThisChar = false;
+                        }
+                         else {
+                            isTrulyUniversalForThisChar = true;
+                        }
+                    }
 
-        function birdFlap() {
-            if (gameState === 'playing') {
-                birdConfig.velocityY = birdConfig.lift;
-            }
-        }
-
-        function drawPipes() {
-            pipes.forEach(pipe => {
-                // Tubería superior
-                if (pipeTopImage && pipeTopImage.complete) {
-                    ctx.drawImage(pipeTopImage, pipe.x, 0, pipeConfig.width, pipe.topPipeHeight);
-                } else {
-                    ctx.fillStyle = pipeConfig.color;
-                    ctx.fillRect(pipe.x, 0, pipeConfig.width, pipe.topPipeHeight);
-                }
-
-                // Tubería inferior
-                if (pipeBottomImage && pipeBottomImage.complete) {
-                    ctx.drawImage(pipeBottomImage, pipe.x, pipe.bottomPipeY, pipeConfig.width, canvas.height - pipe.bottomPipeY);
-                } else {
-                    ctx.fillStyle = pipeConfig.color;
-                    ctx.fillRect(pipe.x, pipe.bottomPipeY, pipeConfig.width, canvas.height - pipe.bottomPipeY);
-                }
-            });
-        }
-
-        function updatePipes() {
-            if (gameFrames % pipeConfig.frequency === 0) {
-                const topPipeHeight = Math.random() * (canvas.height / 2 - pipeConfig.gap / 2) + 50; // Altura aleatoria para la tubería superior
-                const bottomPipeY = topPipeHeight + pipeConfig.gap;
-                pipes.push({
-                    x: canvas.width,
-                    topPipeHeight: topPipeHeight,
-                    bottomPipeY: bottomPipeY,
-                    passed: false
+                    if (isTrulyUniversalForThisChar) {
+                        charUniversalLoves.push(gift);
+                    } else {
+                        charSpecificLoves.push(gift);
+                    }
                 });
             }
 
-            pipes.forEach(pipe => {
-                pipe.x -= pipeConfig.speed;
+            populateGiftList(specificLovedGiftsListEl, charSpecificLoves);
+            populateGiftList(universalLovedGiftsListEl, charUniversalLoves);
+            populateGiftList(likedGiftsListEl, character.likedGifts);
 
-                // Colisión con el pájaro
-                if (
-                    birdConfig.x < pipe.x + pipeConfig.width &&
-                    birdConfig.x + birdConfig.width > pipe.x &&
-                    (birdConfig.y < pipe.topPipeHeight || birdConfig.y + birdConfig.height > pipe.bottomPipeY)
-                ) {
-                    gameOver();
-                }
-
-                // Incrementar puntuación
-                if (pipe.x + pipeConfig.width < birdConfig.x && !pipe.passed) {
-                    score++;
-                    pipe.passed = true;
-                    scoreDisplay.textContent = `Puntuación: ${score}`;
-                }
-            });
-
-            // Eliminar tuberías que han salido de la pantalla
-            pipes = pipes.filter(pipe => pipe.x + pipeConfig.width > 0);
+            specificLovesHeader.style.display = charSpecificLoves.length > 0 ? 'block' : 'none';
+            universalLovesHeader.style.display = charUniversalLoves.length > 0 ? 'block' : 'none';
+            
+            modal.style.display = 'flex';
         }
 
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Si tienes una imagen de fondo para el canvas, dibújala aquí primero
-            if (backgroundImage && backgroundImage.complete) {
-                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-            } else if (!backgroundImage && !document.documentElement.style.getPropertyValue('--canvas-bg-image')) {
-                 // Si no hay imagen de fondo en JS ni en CSS, usa el color de fondo del canvas de CSS
-                 // o un color por defecto si no está definido en CSS.
-                 // Esto ya se maneja con el `background-color` del canvas en CSS.
-                 // Si quieres un color dinámico desde JS:
-                 // ctx.fillStyle = '#70c5ce'; // Color de fondo por defecto del canvas
-                 // ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
-        }
-
-        function showMessage(text, duration = 0) {
-            messageOverlay.textContent = text;
-            messageOverlay.style.display = 'block';
-            if (duration > 0) {
-                setTimeout(() => {
-                    messageOverlay.style.display = 'none';
-                }, duration * 1000);
-            }
-        }
-
-        function hideMessage() {
-            messageOverlay.style.display = 'none';
-        }
-
-        function gameLoop() {
-            if (gameState !== 'playing') {
-                if (gameState === 'gameOver') {
-                    showMessage(`¡Juego Terminado!\nPuntuación Final: ${score}\n\nPresiona Reiniciar`);
-                }
-                return;
-            }
-
-            clearCanvas();
-            updateBird();
-            drawBird();
-            updatePipes();
-            drawPipes();
-
-            gameFrames++;
-            animationFrameId = requestAnimationFrame(gameLoop);
-        }
-
-        function startGame() {
-            if (gameState === 'playing') return;
-
-            // Resetear estado del juego
-            birdConfig.y = canvas.height / 2;
-            birdConfig.velocityY = 0;
-            pipes = [];
-            score = 0;
-            gameFrames = 0;
-            scoreDisplay.textContent = `Puntuación: ${score}`;
-            gameState = 'playing';
-
-            startButton.style.display = 'none';
-            restartButton.style.display = 'inline-block';
-            hideMessage();
-
-            // Cancelar animación anterior si existe
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
-            gameLoop();
-        }
-
-        function gameOver() {
-            if (gameState === 'gameOver') return; // Evitar múltiples llamadas
-            gameState = 'gameOver';
-            cancelAnimationFrame(animationFrameId); // Detener el bucle del juego
-            // El mensaje de Game Over se mostrará en el próximo ciclo de gameLoop
-            // o directamente si se llama desde fuera del bucle.
-             showMessage(`¡Juego Terminado!\nPuntuación Final: ${score}\n\nPresiona Reiniciar`);
-        }
-
-
-        function showStartScreen() {
-            clearCanvas();
-            // Dibujar mensaje de inicio
-            ctx.fillStyle = 'black';
-            ctx.font = '20px "Press Start 2P"';
-            ctx.textAlign = 'center';
-            ctx.fillText('¡Prepárate!', canvas.width / 2, canvas.height / 2 - 30);
-            ctx.font = '14px "Press Start 2P"';
-            ctx.fillText('Haz clic o toca para saltar', canvas.width / 2, canvas.height / 2);
-            ctx.fillText('Presiona "Iniciar Juego"', canvas.width / 2, canvas.height / 2 + 30);
-
-            drawBird(); // Dibuja el pájaro en su posición inicial
-            startButton.style.display = 'inline-block';
-            restartButton.style.display = 'none';
-        }
-
-        // Event Listeners
-        canvas.addEventListener('click', () => {
-            if (gameState === 'playing') {
-                birdFlap();
-            } else if (gameState === 'start') {
-                // Podrías iniciar el juego al hacer clic en el canvas también
-                // startGame();
-            }
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                 e.preventDefault(); // Evita que la página haga scroll
-                if (gameState === 'playing') {
-                    birdFlap();
-                } else if (gameState === 'start' && startButton.style.display !== 'none') {
-                    // startGame(); // Inicia si la pantalla de inicio está activa y se presiona espacio
-                } else if (gameState === 'gameOver' && restartButton.style.display !== 'none') {
-                    // startGame(); // Reinicia si es game over y se presiona espacio
-                }
-            }
+        closeModalButton.addEventListener('click', () => {
+            modal.style.display = 'none';
         });
 
-        startButton.addEventListener('click', () => {
-            gameState = 'start'; // Asegura que estamos en estado 'start' antes de realmente empezar
-            startGame();
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
         });
-
-        restartButton.addEventListener('click', () => {
-            gameState = 'start'; // Vuelve al estado inicial para reiniciar correctamente
-            startGame();
+        
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            }
         });
-
-        // Inicializar el juego mostrando la pantalla de inicio
-        window.onload = () => {
-            showStartScreen();
-        };
 
     </script>
 </body>
